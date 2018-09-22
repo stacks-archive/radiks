@@ -1,5 +1,5 @@
-import * as Constants from './constants';
-import { decryptObject } from '../helpers';
+const Constants = require('./constants');
+const { decryptObject } = require('../helpers');
 
 const savingModel = model => ({
   type: Constants.SAVING_MODEL,
@@ -71,7 +71,7 @@ const fetchModel = model => async function innerFetchModel(dispatch) {
   dispatch(fetchedModel(model));
 };
 
-export default {
+module.exports = {
   saveModel,
   fetchList,
   fetchModel,

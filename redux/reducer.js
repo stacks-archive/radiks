@@ -1,6 +1,5 @@
-import clone from 'lodash/cloneDeep';
-import * as Constants from './constants';
-// import Board from '../../models/board';
+const clone = require('lodash/cloneDeep');
+const Constants = require('./constants');
 
 const initialState = {
   models: {},
@@ -13,7 +12,7 @@ const getNewState = (state, name) => {
   return newState;
 };
 
-export default (state = initialState, action) => {
+const reducer = (state = initialState, action) => {
   switch (action.type) {
     case Constants.SAVING_MODEL: {
       const { name } = action.model.constructor;
@@ -90,3 +89,5 @@ export default (state = initialState, action) => {
       return state;
   }
 };
+
+module.exports = reducer;

@@ -1,7 +1,7 @@
-import * as blockstack from 'blockstack';
-import { signECDSA } from 'blockstack/lib/encryption';
+const blockstack = require('blockstack');
+const { signECDSA } = require('blockstack/lib/encryption');
 
-import { sendLoginSignedMessage } from './api';
+const { sendLoginSignedMessage } = require('./api');
 
 const valueToString = (value, clazz) => {
   if (clazz === Boolean) {
@@ -22,7 +22,7 @@ const stringToValue = (value, clazz) => {
   return value;
 };
 
-export const decryptObject = (encrypted, Model) => {
+const decryptObject = (encrypted, Model) => {
   const decrypted = Object.assign({}, encrypted);
   const { schema } = Model;
   Object.keys(encrypted).forEach((key) => {
@@ -39,7 +39,7 @@ export const decryptObject = (encrypted, Model) => {
   return decrypted;
 };
 
-export const encryptObject = (model) => {
+const encryptObject = (model) => {
   const object = model.attrs;
   const encrypted = Object.assign({}, object, { id: model.id });
   Object.keys(model.schema).forEach((key) => {
@@ -53,12 +53,12 @@ export const encryptObject = (model) => {
   return encrypted;
 };
 
-export const signMessage = (message) => {
+const signMessage = (message) => {
   const { appPrivateKey } = blockstack.loadUserData();
   return signECDSA(appPrivateKey, message);
 };
 
-export const authOptions = () => {
+const authOptions = () => {
   const { appPrivateKey, username } = blockstack.loadUserData();
   const { signature } = signECDSA(appPrivateKey, 'RADIKS_LOGIN');
   return {
@@ -67,8 +67,16 @@ export const authOptions = () => {
   };
 };
 
-export const signUp = async (userData) => {
+const signUp = async (userData) => {
   const { appPrivateKey, username } = userData;
   const signed = signECDSA(appPrivateKey, 'RADIKS_LOGIN');
   await sendLoginSignedMessage(signed, username);
 };
+
+module.exports = {
+  decryptObject,
+  encryptObject,
+  signMessage,
+  authOptions,
+  signUp,
+}

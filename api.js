@@ -1,4 +1,4 @@
-export const sendLoginSignedMessage = async (signed, username) => {
+const sendLoginSignedMessage = async (signed, username) => {
   const uri = `${document.location.origin}/radiks/auth/login`;
   const data = {
     username,
@@ -16,3 +16,7 @@ export const sendLoginSignedMessage = async (signed, username) => {
   const { success } = await request.json();
   return success;
 };
+
+module.exports = {
+  sendLoginSignedMessage
+}

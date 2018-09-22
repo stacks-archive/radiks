@@ -1,24 +1,18 @@
-import uuid from 'uuid/v4';
-import * as blockstack from 'blockstack';
-import merge from 'lodash/merge';
-import PouchDB from 'pouchdb';
-// import PouchDebug from 'pouchdb-debug';
-import PouchFind from 'pouchdb-find';
+const uuid = require('uuid/v4');
+const blockstack = require('blockstack');
+const merge = require('lodash/merge');
+const PouchDB = require('pouchdb').default;
+const PouchFind = require('pouchdb-find');
 
-import { encryptObject, decryptObject, authOptions } from './helpers';
+const { encryptObject, decryptObject, authOptions } = require('./helpers');
 
-// PouchDB.plugin(PouchDebug);
 PouchDB.plugin(PouchFind);
 
-export default class Model {
-  static apiServer = null;
-
+class Model {
   static fromSchema(schema) {
     this.schema = schema;
     return this;
   }
-
-  static defaults = {}
 
   static async fetch() {
     const request = await fetch(this.apiServerPath());
@@ -39,7 +33,7 @@ export default class Model {
   }
 
   constructor(attrs = {}) {
-    const { schema, defaults, name } = this.constructor;
+    const { schema, defaults = {}, name } = this.constructor;
     this.schema = schema;
     this.id = attrs.id || uuid();
     const { username } = blockstack.loadUserData();
@@ -155,3 +149,5 @@ export default class Model {
     return url;
   }
 }
+
+module.exports = Model;
