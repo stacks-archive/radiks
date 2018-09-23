@@ -1,0 +1,18 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "shippedProposals": true,
+        "targets": "last 1 chrome versions",
+        "exclude": []
+      }
+    ]
+  ],
+  "plugins": [
+    "@babel/plugin-proposal-object-rest-spread",
+    "async-to-promises",
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-transform-classes"
+  ]
+}

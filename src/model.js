@@ -1,18 +1,24 @@
-const uuid = require('uuid/v4');
-const blockstack = require('blockstack');
-const merge = require('lodash/merge');
-const PouchDB = require('pouchdb').default;
-const PouchFind = require('pouchdb-find');
+import uuid from 'uuid/v4';
+import * as blockstack from 'blockstack';
+import merge from 'lodash/merge';
+import PouchDB from 'pouchdb';
+// import PouchDebug from 'pouchdb-debug';
+import PouchFind from 'pouchdb-find';
 
-const { encryptObject, decryptObject, authOptions } = require('./helpers');
+import { encryptObject, decryptObject, authOptions } from './helpers';
 
+// PouchDB.plugin(PouchDebug);
 PouchDB.plugin(PouchFind);
 
-class Model {
+export default class Model {
+  static apiServer = null;
+
   static fromSchema(schema) {
     this.schema = schema;
     return this;
   }
+
+  static defaults = {}
 
   static async fetch() {
     const request = await fetch(this.apiServerPath());
@@ -23,9 +29,11 @@ class Model {
     selector.radiksType = this.name;
     const db = this.db();
     const { docs } = await db.find({ selector, ...options });
+    console.log(this);
+    const clazz = this;
     // console.log(docs);
     const models = docs.map((doc) => {
-      const model = new this(doc);
+      const model = new clazz(doc);
       model.decrypt();
       return model;
     });
@@ -33,7 +41,7 @@ class Model {
   }
 
   constructor(attrs = {}) {
-    const { schema, defaults = {}, name } = this.constructor;
+    const { schema, defaults, name } = this.constructor;
     this.schema = schema;
     this.id = attrs.id || uuid();
     const { username } = blockstack.loadUserData();
@@ -76,11 +84,10 @@ class Model {
 
   saveItem() {
     return new Promise(async (resolve, reject) => {
+      const itemsPath = 'items';
       try {
-        const itemsPath = 'items';
-        const filePath = this.blockstackPath();
         let items = await blockstack.getFile(itemsPath, { decrypt: false });
-        // console.log(items);
+        const filePath = this.blockstackPath();
         items += `\n${filePath}`;
         resolve(await blockstack.putFile(itemsPath, items, { encrypt: false }));
       } catch (error) {
@@ -90,11 +97,8 @@ class Model {
   }
 
   async saveToDB(encrypted) {
-    // PouchDB.debug.enable('*');
-    // console.log(encrypted);
     const filePath = this.blockstackPath();
     const attributes = merge({}, encrypted, { filePath });
-    // console.log('data for radiks', attributes);
     const db = this.db();
     attributes._id = attributes.id;
     try {
@@ -149,5 +153,3 @@ class Model {
     return url;
   }
 }
-
-module.exports = Model;

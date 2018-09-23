@@ -6,12 +6,22 @@
   "author": "Hank Stoever",
   "license": "MIT",
   "devDependencies": {
+    "@babel/cli": "^7.1.0",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-async-to-generator": "^7.1.0",
+    "@babel/plugin-transform-classes": "^7.1.0",
+    "@babel/plugin-transform-regenerator": "^7.0.0",
+    "@babel/preset-env": "^7.1.0",
     "babel-eslint": "^9.0.0",
+    "babel-plugin-async-to-promises": "^1.0.5",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "eslint": "^5.3.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0"
   },
   "dependencies": {
+    "@babel/core": "^7.1.0",
     "blockstack": "^18.0.4",
     "lodash": "^4.17.11",
     "pouchdb": "^7.0.0",
