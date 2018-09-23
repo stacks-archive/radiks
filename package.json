@@ -27,5 +27,8 @@
     "pouchdb": "^7.0.0",
     "pouchdb-find": "^7.0.0",
     "uuid": "^3.3.2"
+  },
+  "scripts": {
+    "compile": "babel src -d lib"
   }
 }

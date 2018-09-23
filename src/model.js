@@ -20,18 +20,11 @@ export default class Model {
 
   static defaults = {}
 
-  static async fetch() {
-    const request = await fetch(this.apiServerPath());
-    return request.json();
-  }
-
   static async fetchList(selector, options = {}) {
     selector.radiksType = this.name;
     const db = this.db();
     const { docs } = await db.find({ selector, ...options });
-    console.log(this);
     const clazz = this;
-    // console.log(docs);
     const models = docs.map((doc) => {
       const model = new clazz(doc);
       model.decrypt();
@@ -134,22 +127,10 @@ export default class Model {
     this.attrs = decryptObject(this.attrs, this.constructor);
   }
 
-  apiServerPath(path) {
-    return this.constructor.apiServerPath(path);
-  }
-
   update(attrs) {
     this.attrs = {
       ...this.attrs,
       ...attrs,
     };
-  }
-
-  static apiServerPath(path) {
-    let url = `${this.apiServer}/radiks/models/${this.constructor.name}`;
-    if (path) {
-      url += `/${path}`;
-    }
-    return url;
   }
 }
