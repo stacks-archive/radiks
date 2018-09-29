@@ -45,14 +45,9 @@ export default class Model {
     };
   }
 
-  static hello() {
-    console.log(this.name);
-  }
-
   async fetchSchema() {
     const { name } = this.schema;
     const url = `${this.constructor.apiServer}/radiks/models/${name}/schema`;
-    // console.log(url);
     const request = await fetch(url);
     const data = await request.json();
     return data;
