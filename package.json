@@ -2,7 +2,7 @@
   "name": "radiks",
   "version": "0.0.1",
   "description": "Manage models with encryption and decentralized storage",
-  "main": "index.js",
+  "main": "lib/index.js",
   "author": "Hank Stoever",
   "license": "MIT",
   "devDependencies": {
@@ -29,6 +29,7 @@
     "uuid": "^3.3.2"
   },
   "scripts": {
-    "compile": "babel src -d lib"
+    "compile": "babel src -d lib",
+    "compile-watch": "nodemon -x 'yarn compile' -i lib"
   }
 }
