@@ -42,9 +42,7 @@ const deselectModel = model => ({
   model,
 });
 
-const saveModel = model => async function innerSaveModel(dispatch, getState) {
-  const { currentUser } = getState().user;
-  model.createdBy = currentUser;
+const saveModel = model => async function innerSaveModel(dispatch) {
   dispatch(savingModel(model));
   await model.save();
   // console.log(file, items);
