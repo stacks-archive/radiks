@@ -1,7 +1,4 @@
 import * as blockstack from 'blockstack';
-import { signECDSA } from 'blockstack/lib/encryption';
-
-import { sendLoginSignedMessage } from './api';
 
 const valueToString = (value, clazz) => {
   if (clazz === Boolean) {
@@ -51,24 +48,4 @@ export const encryptObject = (model) => {
     }
   });
   return encrypted;
-};
-
-export const signMessage = (message) => {
-  const { appPrivateKey } = blockstack.loadUserData();
-  return signECDSA(appPrivateKey, message);
-};
-
-export const authOptions = () => {
-  const { appPrivateKey, username } = blockstack.loadUserData();
-  const { signature } = signECDSA(appPrivateKey, 'RADIKS_LOGIN');
-  return {
-    username,
-    password: signature,
-  };
-};
-
-export const signUp = async (userData) => {
-  const { appPrivateKey, username } = userData;
-  const signed = signECDSA(appPrivateKey, 'RADIKS_LOGIN');
-  await sendLoginSignedMessage(signed, username);
 };

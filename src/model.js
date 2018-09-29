@@ -5,6 +5,7 @@ import PouchFind from 'pouchdb-find';
 import { getConfig } from './config';
 
 import { encryptObject, decryptObject } from './helpers';
+import { sendNewGaiaUrl } from './api';
 
 PouchDB.plugin(PouchFind);
 
@@ -45,14 +46,6 @@ export default class Model {
     };
   }
 
-  async fetchSchema() {
-    const { name } = this.schema;
-    const url = `${this.constructor.apiServer}/radiks/models/${name}/schema`;
-    const request = await fetch(url);
-    const data = await request.json();
-    return data;
-  }
-
   async save() {
     return new Promise(async (resolve, reject) => {
       try {
@@ -60,7 +53,7 @@ export default class Model {
         this.attrs.updatedAt = new Date().getTime();
         const encrypted = this.encrypted();
         const gaiaURL = await this.saveFile(encrypted);
-        await this.saveToAPI(gaiaURL);
+        await sendNewGaiaUrl(gaiaURL);
         resolve(this);
       } catch (error) {
         reject(error);
@@ -93,22 +86,6 @@ export default class Model {
         reject(error);
       }
     });
-  }
-
-  saveToAPI = async (gaiaURL) => {
-    const { apiServer } = getConfig();
-    const url = `${apiServer}/radiks/models/crawl`;
-    // console.log(url, gaiaURL);
-    const data = { gaiaURL };
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: new Headers({
-        'Content-Type': 'application/json',
-      }),
-    });
-    const { success } = await response.json();
-    return success;
   }
 
   db() {

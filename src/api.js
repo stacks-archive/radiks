@@ -1,18 +1,17 @@
-export const sendLoginSignedMessage = async (signed, username) => {
-  const uri = `${document.location.origin}/radiks/auth/login`;
-  const data = {
-    username,
-    ...signed,
-    origin: document.location.origin,
-  };
-  console.log(data);
-  const request = await fetch(uri, {
+import { getConfig } from './config';
+
+export const sendNewGaiaUrl = async (gaiaURL) => {
+  const { apiServer } = getConfig();
+  const url = `${apiServer}/radiks/models/crawl`;
+  // console.log(url, gaiaURL);
+  const data = { gaiaURL };
+  const response = await fetch(url, {
     method: 'POST',
+    body: JSON.stringify(data),
     headers: new Headers({
       'Content-Type': 'application/json',
     }),
-    body: JSON.stringify(data),
   });
-  const { success } = await request.json();
+  const { success } = await response.json();
   return success;
 };
