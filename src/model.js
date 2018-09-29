@@ -1,13 +1,11 @@
 import uuid from 'uuid/v4';
 import * as blockstack from 'blockstack';
-import merge from 'lodash/merge';
 import PouchDB from 'pouchdb';
-// import PouchDebug from 'pouchdb-debug';
 import PouchFind from 'pouchdb-find';
+import { getConfig } from './config';
 
-import { encryptObject, decryptObject, authOptions } from './helpers';
+import { encryptObject, decryptObject } from './helpers';
 
-// PouchDB.plugin(PouchDebug);
 PouchDB.plugin(PouchFind);
 
 export default class Model {
@@ -20,13 +18,16 @@ export default class Model {
 
   static defaults = {}
 
-  static async fetchList(selector, options = {}) {
-    selector.radiksType = this.name;
+  static async fetchList(_selector, options = {}) {
+    const selector = {
+      ..._selector,
+      radiksType: this.name,
+    };
     const db = this.db();
     const { docs } = await db.find({ selector, ...options });
-    const clazz = this;
+    const Clazz = this;
     const models = docs.map((doc) => {
-      const model = new clazz(doc);
+      const model = new Clazz(doc);
       model.decrypt();
       return model;
     });
@@ -37,12 +38,15 @@ export default class Model {
     const { schema, defaults, name } = this.constructor;
     this.schema = schema;
     this.id = attrs.id || uuid();
-    const { username } = blockstack.loadUserData();
-    this.attrs = merge({}, defaults, attrs, { createdBy: username, radiksType: name });
+    this.attrs = {
+      ...defaults,
+      ...attrs,
+      radiksType: name,
+    };
   }
 
-  hello() {
-    console.log(this.schema);
+  static hello() {
+    console.log(this.name);
   }
 
   async fetchSchema() {
@@ -54,9 +58,19 @@ export default class Model {
     return data;
   }
 
-  save() {
-    const encrypted = this.encrypted();
-    return Promise.all([this.saveFile(encrypted), this.saveItem(), this.saveToDB(encrypted)]);
+  async save() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.attrs.createdAt = this.attrs.createdAt || new Date().getTime();
+        this.attrs.updatedAt = new Date().getTime();
+        const encrypted = this.encrypted();
+        const gaiaURL = await this.saveFile(encrypted);
+        await this.saveToAPI(gaiaURL);
+        resolve(this);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   encrypted() {
@@ -64,9 +78,6 @@ export default class Model {
   }
 
   saveFile(encrypted) {
-    // console.log(this);
-    // const data = encryptObject(this);
-    // console.log(data);
     return blockstack.putFile(this.blockstackPath(), JSON.stringify(encrypted), { encrypt: false });
   }
 
@@ -89,18 +100,20 @@ export default class Model {
     });
   }
 
-  async saveToDB(encrypted) {
-    const filePath = this.blockstackPath();
-    const attributes = merge({}, encrypted, { filePath });
-    const db = this.db();
-    attributes._id = attributes.id;
-    try {
-      const result = await db.put(attributes);
-      this.attrs._rev = result.rev;
-    } catch (error) {
-      console.error('Error when saving to PouchDB', error);
-      throw (error);
-    }
+  saveToAPI = async (gaiaURL) => {
+    const { apiServer } = getConfig();
+    const url = `${apiServer}/radiks/models/crawl`;
+    // console.log(url, gaiaURL);
+    const data = { gaiaURL };
+    const response = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: new Headers({
+        'Content-Type': 'application/json',
+      }),
+    });
+    const { success } = await response.json();
+    return success;
   }
 
   db() {
@@ -108,16 +121,16 @@ export default class Model {
   }
 
   static db() {
-    return new PouchDB('http://127.0.0.1:5984/kanstack', {
-      auth: {
-        ...authOptions(),
-      },
-    });
+    const { couchDBName, couchDBUrl } = getConfig();
+    return new PouchDB(`${couchDBUrl}/${couchDBName}`);
   }
 
   async fetch() {
     const attrs = await this.db().get(this.id);
-    this.attrs = merge(attrs, this.attrs);
+    this.attrs = {
+      ...this.attrs,
+      ...attrs,
+    };
     this.decrypt();
     if (this.afterFetch) await this.afterFetch();
     return this;
