@@ -1,5 +1,6 @@
 import uuid from 'uuid/v4';
 import * as blockstack from 'blockstack';
+import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 import { getConfig } from './config';
@@ -27,11 +28,11 @@ export default class Model {
     const db = this.db();
     const { docs } = await db.find({ selector, ...options });
     const Clazz = this;
-    const models = docs.map((doc) => {
+    const modelDecryptions = docs.map((doc) => {
       const model = new Clazz(doc);
-      model.decrypt();
-      return model;
+      return model.decrypt();
     });
+    const models = await Promise.all(modelDecryptions);
     return models;
   }
 
@@ -51,7 +52,7 @@ export default class Model {
       try {
         this.attrs.createdAt = this.attrs.createdAt || new Date().getTime();
         this.attrs.updatedAt = new Date().getTime();
-        const encrypted = this.encrypted();
+        const encrypted = await this.encrypted();
         const gaiaURL = await this.saveFile(encrypted);
         await sendNewGaiaUrl(gaiaURL);
         resolve(this);
@@ -103,13 +104,14 @@ export default class Model {
       ...this.attrs,
       ...attrs,
     };
-    this.decrypt();
+    await this.decrypt();
     if (this.afterFetch) await this.afterFetch();
     return this;
   }
 
-  decrypt() {
-    this.attrs = decryptObject(this.attrs, this.constructor);
+  async decrypt() {
+    this.attrs = await decryptObject(this.attrs, this);
+    return this;
   }
 
   update(attrs) {
@@ -118,4 +120,11 @@ export default class Model {
       ...attrs,
     };
   }
+
+  encryptionPublicKey = () => {
+    const { appPrivateKey } = blockstack.loadUserData();
+    return getPublicKeyFromPrivate(appPrivateKey);
+  }
+
+  encryptionPrivateKey = () => blockstack.loadUserData().appPrivateKey
 }

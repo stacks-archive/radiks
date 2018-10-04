@@ -1,5 +1,6 @@
+import { loadUserData } from 'blockstack/lib/auth/authApp';
+import { GroupMembership, UserGroup } from '..';
 import * as Constants from './constants';
-import { decryptObject } from '../helpers';
 
 const savingModel = model => ({
   type: Constants.SAVING_MODEL,
@@ -9,17 +10,6 @@ const savingModel = model => ({
 const savedModel = model => ({
   type: Constants.SAVED_MODEL,
   model,
-});
-
-const fetchingModels = model => ({
-  type: Constants.FETCHING_MODELS,
-  model,
-});
-
-const fetchedModels = (modelName, models) => ({
-  type: Constants.FETCHED_MODELS,
-  name: modelName,
-  models,
 });
 
 const fetchingModel = model => ({
@@ -42,24 +32,20 @@ const deselectModel = model => ({
   model,
 });
 
+const fetchingUserGroups = () => ({
+  type: Constants.FETCHING_USER_GROUPS,
+});
+
+const fetchedUserGroups = userGroups => ({
+  type: Constants.FETCHED_USER_GROUPS,
+  userGroups,
+});
+
 const saveModel = model => async function innerSaveModel(dispatch) {
   dispatch(savingModel(model));
   await model.save();
   // console.log(file, items);
   dispatch(savedModel(model));
-};
-
-const fetchList = Model => async function innerfetchList(dispatch) {
-  dispatch(fetchingModels(Model));
-  const { models } = await Model.fetch();
-  // console.log(models);
-  const decryptedModels = models.map((object) => {
-    const decrypted = decryptObject(object, Model);
-    // console.log(decrypted);
-    return new Model(decrypted);
-  });
-  // console.log(decryptedModels);
-  dispatch(fetchedModels(Model.constructor, decryptedModels));
 };
 
 const fetchModel = model => async function innerFetchModel(dispatch) {
@@ -69,10 +55,25 @@ const fetchModel = model => async function innerFetchModel(dispatch) {
   dispatch(fetchedModel(model));
 };
 
+const fetchUserGroups = () => async function innerFetchUserGroups(dispatch) {
+  dispatch(fetchingUserGroups());
+  const { username } = loadUserData();
+  const memberships = await GroupMembership.fetchList({
+    username,
+  });
+  const fetchAll = memberships.map(membership => membership.fetchUserGroup());
+  const userGroups = await Promise.all(fetchAll);
+  const byId = {};
+  userGroups.forEach((userGroup) => {
+    byId[userGroup.id] = userGroup;
+  });
+  dispatch(fetchedUserGroups(byId));
+};
+
 export default {
   saveModel,
-  fetchList,
   fetchModel,
   selectModel,
   deselectModel,
+  fetchUserGroups,
 };

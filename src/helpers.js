@@ -1,4 +1,4 @@
-import * as blockstack from 'blockstack';
+import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption';
 
 const valueToString = (value, clazz) => {
   if (clazz === Boolean) {
@@ -19,15 +19,17 @@ const stringToValue = (value, clazz) => {
   return value;
 };
 
-export const decryptObject = (encrypted, Model) => {
+export const decryptObject = async (encrypted, model) => {
+  const privateKey = await model.encryptionPrivateKey();
   const decrypted = Object.assign({}, encrypted);
-  const { schema } = Model;
+  const { schema } = model;
   Object.keys(encrypted).forEach((key) => {
     const value = encrypted[key];
     const clazz = schema[key];
     if (clazz && !clazz.decrypted) {
       try {
-        decrypted[key] = stringToValue(blockstack.decryptContent(value), clazz.type || clazz);
+        const decryptedValue = decryptECIES(privateKey, value);
+        decrypted[key] = stringToValue(decryptedValue, clazz.type || clazz);
       } catch (error) {
         decrypted[key] = value;
       }
@@ -36,7 +38,8 @@ export const decryptObject = (encrypted, Model) => {
   return decrypted;
 };
 
-export const encryptObject = (model) => {
+export const encryptObject = async (model) => {
+  const publicKey = await model.encryptionPublicKey();
   const object = model.attrs;
   const encrypted = Object.assign({}, object, { id: model.id });
   Object.keys(model.schema).forEach((key) => {
@@ -44,7 +47,8 @@ export const encryptObject = (model) => {
     const { decrypted } = clazz;
     const value = object[key];
     if (typeof (value) !== 'undefined') {
-      encrypted[key] = decrypted ? value : blockstack.encryptContent(valueToString(value, clazz.type || clazz));
+      const stringValue = valueToString(value, clazz.type || clazz);
+      encrypted[key] = decrypted ? value : encryptECIES(publicKey, stringValue);
     }
   });
   return encrypted;

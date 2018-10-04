@@ -4,6 +4,10 @@ import * as Constants from './constants';
 
 const initialState = {
   models: {},
+  userGroups: {
+    byId: {},
+    isFetching: false,
+  },
 };
 
 const getNewState = (state, name) => {
@@ -85,6 +89,21 @@ export default (state = initialState, action) => {
       const newState = getNewState(state, name);
       newState.models[name].selectedModel = null;
       return { ...newState };
+    }
+    case Constants.FETCHING_USER_GROUPS: {
+      const newState = clone(state);
+      newState.userGroups.isFetching = true;
+      return {
+        ...newState,
+      };
+    }
+    case Constants.FETCHED_USER_GROUPS: {
+      const newState = clone(state);
+      newState.userGroups.isFetching = false;
+      newState.userGroups.byId = action.userGroups;
+      return {
+        ...newState,
+      };
     }
     default:
       return state;

@@ -30,3 +30,5 @@ export const selectSelectedModel = (state, modelName) => {
   const model = selectModel(state, modelName);
   return model && model.selectedModel;
 };
+
+export const selectUserGroupsById = state => state.radiks.userGroups.byId;
