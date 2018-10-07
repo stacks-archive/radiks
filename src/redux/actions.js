@@ -1,6 +1,6 @@
-import { loadUserData } from 'blockstack/lib/auth/authApp';
-import { GroupMembership, UserGroup } from '..';
 import * as Constants from './constants';
+import GroupMembership from '../models/group-membership';
+import UserGroup from '../models/user-group';
 
 const savingModel = model => ({
   type: Constants.SAVING_MODEL,
@@ -41,6 +41,15 @@ const fetchedUserGroups = userGroups => ({
   userGroups,
 });
 
+const fetchingUserGroup = () => ({
+  type: Constants.FETCHING_USER_GROUP,
+});
+
+const fetchedUserGroup = userGroup => ({
+  type: Constants.FETCHED_USER_GROUP,
+  userGroup,
+});
+
 const saveModel = model => async function innerSaveModel(dispatch) {
   dispatch(savingModel(model));
   await model.save();
@@ -57,17 +66,14 @@ const fetchModel = model => async function innerFetchModel(dispatch) {
 
 const fetchUserGroups = () => async function innerFetchUserGroups(dispatch) {
   dispatch(fetchingUserGroups());
-  const { username } = loadUserData();
-  const memberships = await GroupMembership.fetchList({
-    username,
-  });
-  const fetchAll = memberships.map(membership => membership.fetchUserGroup());
-  const userGroups = await Promise.all(fetchAll);
-  const byId = {};
-  userGroups.forEach((userGroup) => {
-    byId[userGroup.id] = userGroup;
-  });
+  const byId = await GroupMembership.fetchUserGroups();
   dispatch(fetchedUserGroups(byId));
+};
+
+const fetchUserGroup = id => async function innerFetchUserGroup(dispatch) {
+  dispatch(fetchingUserGroup());
+  const userGroup = await UserGroup.find(id);
+  dispatch(fetchedUserGroup(userGroup));
 };
 
 export default {
@@ -76,4 +82,5 @@ export default {
   selectModel,
   deselectModel,
   fetchUserGroups,
+  fetchUserGroup,
 };

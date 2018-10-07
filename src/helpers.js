@@ -1,10 +1,14 @@
 import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption';
 
+export const GROUP_MEMBERSHIPS_STORAGE_KEY = 'GROUP_MEMBERSHIPS_STORAGE_KEY';
+
 const valueToString = (value, clazz) => {
   if (clazz === Boolean) {
     return value ? 'true' : 'false';
   } if (clazz === Number) {
     return String(value);
+  } if (clazz === Array || clazz === Object) {
+    return JSON.stringify(value);
   }
   return value;
 };
@@ -12,9 +16,10 @@ const valueToString = (value, clazz) => {
 const stringToValue = (value, clazz) => {
   if (clazz === Boolean) {
     return value === 'true';
-  }
-  if (clazz === Number) {
+  } if (clazz === Number) {
     return parseFloat(value);
+  } if (clazz === Array || clazz === Object) {
+    return JSON.parse(value);
   }
   return value;
 };
@@ -52,4 +57,13 @@ export const encryptObject = async (model) => {
     }
   });
   return encrypted;
+};
+
+export const clearStorage = () => {
+  localStorage.removeItem(GROUP_MEMBERSHIPS_STORAGE_KEY);
+};
+
+export const userGroupKeys = () => {
+  const keys = localStorage.getItem(GROUP_MEMBERSHIPS_STORAGE_KEY);
+  return keys ? JSON.parse(keys) : null;
 };

@@ -5,8 +5,9 @@ import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 import { getConfig } from './config';
 
-import { encryptObject, decryptObject } from './helpers';
+import { encryptObject, decryptObject, userGroupKeys } from './helpers';
 import { sendNewGaiaUrl } from './api';
+// import { GroupMembership } from './index';
 
 PouchDB.plugin(PouchFind);
 
@@ -20,7 +21,7 @@ export default class Model {
 
   static defaults = {}
 
-  static async fetchList(_selector, options = {}) {
+  static async fetchList(_selector, options = {}, { decrypt = true } = {}) {
     const selector = {
       ..._selector,
       radiksType: this.name,
@@ -30,7 +31,10 @@ export default class Model {
     const Clazz = this;
     const modelDecryptions = docs.map((doc) => {
       const model = new Clazz(doc);
-      return model.decrypt();
+      if (decrypt) {
+        model.decrypt();
+      }
+      return model;
     });
     const models = await Promise.all(modelDecryptions);
     return models;
@@ -121,10 +125,16 @@ export default class Model {
     };
   }
 
-  encryptionPublicKey = () => {
-    const { appPrivateKey } = blockstack.loadUserData();
-    return getPublicKeyFromPrivate(appPrivateKey);
-  }
+  encryptionPublicKey = () => getPublicKeyFromPrivate(this.encryptionPrivateKey())
 
-  encryptionPrivateKey = () => blockstack.loadUserData().appPrivateKey
+  encryptionPrivateKey = () => {
+    let privateKey;
+    if (this.attrs.userGroupId) {
+      const keys = userGroupKeys();
+      privateKey = keys[this.attrs.userGroupId];
+    } else {
+      privateKey = blockstack.loadUserData().appPrivateKey;
+    }
+    return privateKey;
+  }
 }

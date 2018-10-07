@@ -1,7 +1,6 @@
 import { makeECPrivateKey, getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import { loadUserData } from 'blockstack/lib/auth/authApp';
 import { connectToGaiaHub } from 'blockstack/lib/storage/hub';
-import { encryptECIES } from 'blockstack/lib/encryption';
 
 import Model from '../model';
 import GroupMembership from './group-membership';
@@ -12,15 +11,30 @@ export default class UserGroup extends Model {
     gaiaConfig: Object,
     members: {
       type: Array,
-      decrypted: true,
     },
+  }
+
+  static defaults = {
+    members: [],
+  }
+
+  static async find(id) {
+    const keys = GroupMembership.userGroupKeys();
+    if (!keys || !keys[id]) {
+      throw new Error(`UserGroup not found with id: '${id}'. Have you called \`GroupMembership.cacheKeys()\`?`);
+    }
+    const privateKey = keys[id];
+    const userGroup = new this({ id });
+    userGroup.privateKey = privateKey;
+    await userGroup.fetch();
+    return userGroup;
   }
 
   async create() {
     this.privateKey = makeECPrivateKey();
+    this.makeGaiaConfig();
     const { username } = loadUserData();
     await this.makeGroupMembership(username);
-    await this.save();
     return this;
   }
 
@@ -30,7 +44,12 @@ export default class UserGroup extends Model {
       username,
       groupPrivateKey: this.privateKey,
     });
+    this.attrs.members.push({
+      username,
+    });
     await groupMembership.save();
+    await this.save();
+    GroupMembership.cacheKeys();
     return groupMembership;
   }
 
@@ -52,6 +71,7 @@ export default class UserGroup extends Model {
       },
     ];
     const gaiaConfig = await connectToGaiaHub(hubUrl, appPrivateKey, scopes);
+    this.attrs.gaiaConfig = gaiaConfig;
     return gaiaConfig;
   }
 }

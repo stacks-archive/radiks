@@ -105,6 +105,22 @@ export default (state = initialState, action) => {
         ...newState,
       };
     }
+    case Constants.FETCHING_USER_GROUP: {
+      const newState = clone(state);
+      newState.userGroups.isFetching = true;
+      return {
+        ...newState,
+      };
+    }
+    case Constants.FETCHED_USER_GROUP: {
+      const newState = clone(state);
+      newState.userGroups.isFetching = false;
+      newState.userGroups.byId = newState.userGroups.byId || {};
+      newState.userGroups.byId[action.userGroup.id] = action.userGroup;
+      return {
+        ...newState,
+      };
+    }
     default:
       return state;
   }
