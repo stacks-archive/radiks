@@ -2,6 +2,7 @@ import { loadUserData } from 'blockstack/lib/auth/authApp';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 
 import Model from '../model';
+import SigningKey from './signing-key';
 
 const decrypted = true;
 
@@ -19,6 +20,7 @@ export default class BlockstackUser extends Model {
       type: String,
       decrypted,
     },
+    signingKeyId: String,
   }
 
   static currentUser() {
@@ -46,9 +48,20 @@ export default class BlockstackUser extends Model {
 
   static createWithCurrentUser() {
     return new Promise((resolve, reject) => {
+      const resolveUser = (user, _resolve) => user.save().then(() => {
+        _resolve(user);
+      });
       try {
         const user = this.currentUser();
         user.fetch().finally(() => {
+          if (!user.attrs.signingKeyId) {
+            SigningKey.create().then((key) => {
+              user.attrs.signingKeyId = key.id;
+              resolveUser(user, resolve);
+            });
+          } else {
+            resolveUser(user, resolve);
+          }
           user.save().then(() => {
             resolve(user);
           });

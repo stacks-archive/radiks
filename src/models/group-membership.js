@@ -32,6 +32,8 @@ export default class GroupMembership extends Model {
   static async cacheKeys() {
     const userGroups = await this.fetchUserGroups();
     const groupKeys = {};
+    const self = await User.findById(loadUserData().username);
+    groupKeys.personal = self.signingKeyId;
     Object.keys(userGroups).forEach((id) => {
       const group = userGroups[id];
       groupKeys[id] = group.privateKey;
@@ -44,12 +46,11 @@ export default class GroupMembership extends Model {
   }
 
   static userGroupKeys() {
-    userGroupKeys();
+    return userGroupKeys();
   }
 
   async encryptionPublicKey() {
-    const user = new User({ id: this.attrs.username });
-    await user.fetch();
+    const user = await User.findById(this.attrs.username, { decrypt: false });
     const { publicKey } = user.attrs;
     return publicKey;
   }

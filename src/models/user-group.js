@@ -4,6 +4,7 @@ import { connectToGaiaHub } from 'blockstack/lib/storage/hub';
 
 import Model from '../model';
 import GroupMembership from './group-membership';
+import GroupInvitation from './group-invitation';
 
 export default class UserGroup extends Model {
   static schema = {
@@ -34,23 +35,20 @@ export default class UserGroup extends Model {
     this.privateKey = makeECPrivateKey();
     this.makeGaiaConfig();
     const { username } = loadUserData();
-    await this.makeGroupMembership(username);
+    const invitation = await this.makeGroupMembership(username);
+    await invitation.activate();
     return this;
   }
 
   async makeGroupMembership(username) {
-    const groupMembership = new GroupMembership({
-      userGroupId: this.id,
-      username,
-      groupPrivateKey: this.privateKey,
-    });
+    const invitation = await GroupInvitation.makeInvitation(username, this);
+    invitation.activate();
     this.attrs.members.push({
       username,
+      inviteId: invitation.id,
     });
-    await groupMembership.save();
     await this.save();
-    GroupMembership.cacheKeys();
-    return groupMembership;
+    return invitation;
   }
 
   publicKey() {

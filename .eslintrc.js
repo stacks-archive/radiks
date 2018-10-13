@@ -5,6 +5,7 @@ module.exports = {
     browser: true,
   },
   rules: {
-    "import/prefer-default-export": [0]
+    "import/prefer-default-export": [0],
+    "no-underscore-dangle": [0],
   }
 };

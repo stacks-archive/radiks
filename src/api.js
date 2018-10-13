@@ -12,6 +12,9 @@ export const sendNewGaiaUrl = async (gaiaURL) => {
       'Content-Type': 'application/json',
     }),
   });
-  const { success } = await response.json();
-  return success;
+  const { success, doc, message } = await response.json();
+  if (!success) {
+    throw new Error(`Error when saving model: '${message}'`);
+  }
+  return doc;
 };

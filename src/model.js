@@ -40,6 +40,12 @@ export default class Model {
     return models;
   }
 
+  static findById(id, fetchOptions) {
+    const Clazz = this;
+    const model = new Clazz({ id });
+    return model.fetch(fetchOptions);
+  }
+
   constructor(attrs = {}) {
     const { schema, defaults, name } = this.constructor;
     this.schema = schema;
@@ -54,11 +60,14 @@ export default class Model {
   async save() {
     return new Promise(async (resolve, reject) => {
       try {
-        this.attrs.createdAt = this.attrs.createdAt || new Date().getTime();
-        this.attrs.updatedAt = new Date().getTime();
+        const now = new Date().getTime();
+        this.attrs.createdAt = this.attrs.createdAt || now;
+        this.attrs.updatedAt = now;
         const encrypted = await this.encrypted();
         const gaiaURL = await this.saveFile(encrypted);
-        await sendNewGaiaUrl(gaiaURL);
+        const doc = await sendNewGaiaUrl(gaiaURL);
+        console.log(doc);
+        this.attrs._rev = doc.rev;
         resolve(this);
       } catch (error) {
         reject(error);
@@ -79,20 +88,6 @@ export default class Model {
     return path;
   }
 
-  saveItem() {
-    return new Promise(async (resolve, reject) => {
-      const itemsPath = 'items';
-      try {
-        let items = await blockstack.getFile(itemsPath, { decrypt: false });
-        const filePath = this.blockstackPath();
-        items += `\n${filePath}`;
-        resolve(await blockstack.putFile(itemsPath, items, { encrypt: false }));
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
   db() {
     return this.constructor.db();
   }
@@ -102,13 +97,15 @@ export default class Model {
     return new PouchDB(`${couchDBUrl}/${couchDBName}`);
   }
 
-  async fetch() {
+  async fetch({ decrypt = true } = {}) {
     const attrs = await this.db().get(this.id);
     this.attrs = {
       ...this.attrs,
       ...attrs,
     };
-    await this.decrypt();
+    if (decrypt) {
+      await this.decrypt();
+    }
     if (this.afterFetch) await this.afterFetch();
     return this;
   }
