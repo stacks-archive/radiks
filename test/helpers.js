@@ -2,7 +2,7 @@
 import Model from '../src/model';
 // import './setup';
 
-class TestModel extends Model {
+export class TestModel extends Model {
   static schema = {
     name: {
       type: String,

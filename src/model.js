@@ -66,7 +66,7 @@ export default class Model {
         const encrypted = await this.encrypted();
         const gaiaURL = await this.saveFile(encrypted);
         const doc = await sendNewGaiaUrl(gaiaURL);
-        console.log(doc);
+        // console.log(doc);
         this.attrs._rev = doc.rev;
         resolve(this);
       } catch (error) {
