@@ -36,6 +36,7 @@ export const decryptObject = async (encrypted, model) => {
         const decryptedValue = decryptECIES(privateKey, value);
         decrypted[key] = stringToValue(decryptedValue, clazz.type || clazz);
       } catch (error) {
+        // console.error(`Decryption error for key: '${key}': ${error.message}`);
         decrypted[key] = value;
       }
     }
@@ -46,6 +47,7 @@ export const decryptObject = async (encrypted, model) => {
 export const encryptObject = async (model) => {
   const publicKey = await model.encryptionPublicKey();
   const object = model.attrs;
+  // console.log(object);
   const encrypted = Object.assign({}, object, { id: model.id });
   Object.keys(model.schema).forEach((key) => {
     const clazz = model.schema[key];
@@ -64,6 +66,29 @@ export const clearStorage = () => {
 };
 
 export const userGroupKeys = () => {
-  const keys = localStorage.getItem(GROUP_MEMBERSHIPS_STORAGE_KEY);
-  return keys ? JSON.parse(keys) : null;
+  let keys = localStorage.getItem(GROUP_MEMBERSHIPS_STORAGE_KEY);
+  keys = keys ? JSON.parse(keys) : {};
+  keys = {
+    userGroups: {},
+    signingKeys: {},
+    personal: {},
+    ...keys,
+  };
+  return keys;
+};
+
+export const addPersonalSigningKey = (signingKey) => {
+  const keys = userGroupKeys();
+  keys.personal = {
+    id: signingKey.id,
+    ...signingKey.attrs,
+  };
+  localStorage.setItem(GROUP_MEMBERSHIPS_STORAGE_KEY, JSON.stringify(keys));
+};
+
+export const addUserGroupKey = (userGroup) => {
+  const keys = userGroupKeys();
+  keys.userGroups[userGroup.id] = userGroup.attrs.signingKeyId;
+  keys.signingKeys[userGroup.attrs.signingKeyId] = userGroup.privateKey;
+  localStorage.setItem(GROUP_MEMBERSHIPS_STORAGE_KEY, JSON.stringify(keys));
 };

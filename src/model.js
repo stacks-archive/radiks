@@ -1,6 +1,7 @@
 import uuid from 'uuid/v4';
 import * as blockstack from 'blockstack';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
+import { signECDSA } from 'blockstack/lib/encryption';
 import PouchDB from 'pouchdb';
 import PouchFind from 'pouchdb-find';
 import { getConfig } from './config';
@@ -49,7 +50,7 @@ export default class Model {
   constructor(attrs = {}) {
     const { schema, defaults, name } = this.constructor;
     this.schema = schema;
-    this.id = attrs.id || uuid();
+    this.id = attrs.id || uuid().replace('-', '');
     this.attrs = {
       ...defaults,
       ...attrs,
@@ -63,10 +64,10 @@ export default class Model {
         const now = new Date().getTime();
         this.attrs.createdAt = this.attrs.createdAt || now;
         this.attrs.updatedAt = now;
+        await this.sign();
         const encrypted = await this.encrypted();
         const gaiaURL = await this.saveFile(encrypted);
         const doc = await sendNewGaiaUrl(gaiaURL);
-        // console.log(doc);
         this.attrs._rev = doc.rev;
         resolve(this);
       } catch (error) {
@@ -94,18 +95,26 @@ export default class Model {
 
   static db() {
     const { couchDBName, couchDBUrl } = getConfig();
-    return new PouchDB(`${couchDBUrl}/${couchDBName}`);
+    let url = '';
+    if (couchDBUrl) {
+      url += `${couchDBUrl}/`;
+    }
+    url += couchDBName;
+    return new PouchDB(url);
   }
 
   async fetch({ decrypt = true } = {}) {
     const attrs = await this.db().get(this.id);
+    // console.log('db attrs', attrs.signingKeyId);
     this.attrs = {
       ...this.attrs,
       ...attrs,
     };
+    // console.log('fetching', this.constructor.name, decrypt);
     if (decrypt) {
       await this.decrypt();
     }
+    // console.log('after decrypt', this.attrs.signingKeyId);
     if (this.afterFetch) await this.afterFetch();
     return this;
   }
@@ -122,13 +131,48 @@ export default class Model {
     };
   }
 
+  async sign() {
+    if (this.attrs.updatable === false) {
+      return true;
+    }
+    const signingKey = this.getSigningKey();
+    // const oldSigningKeyId = this.attrs.signingKeyId || signingKey.id;
+    this.attrs.signingKeyId = signingKey.id;
+    const { privateKey } = signingKey;
+    // // if a user group rotates keys, we need to sign with the old key
+    // if (oldSigningKeyId !== signingKey.id) {
+    //   privateKey = userGroupKeys().signingKeys[oldSigningKeyId];
+    // }
+    const contentToSign = [this.id];
+    if (this.attrs._rev) {
+      contentToSign.push(this.attrs._rev);
+    }
+    const { signature } = signECDSA(privateKey, contentToSign.join('-'));
+    this.attrs.radiksSignature = signature;
+    return this;
+  }
+
+  getSigningKey() {
+    if (this.attrs.userGroupId) {
+      const { userGroups, signingKeys } = userGroupKeys();
+
+      const id = userGroups[this.attrs.userGroupId];
+      const privateKey = signingKeys[id];
+      return {
+        id,
+        privateKey,
+      };
+    }
+    return userGroupKeys().personal;
+  }
+
   encryptionPublicKey = () => getPublicKeyFromPrivate(this.encryptionPrivateKey())
 
   encryptionPrivateKey = () => {
     let privateKey;
     if (this.attrs.userGroupId) {
-      const keys = userGroupKeys();
-      privateKey = keys[this.attrs.userGroupId];
+      const { userGroups, signingKeys } = userGroupKeys();
+      privateKey = signingKeys[userGroups[this.attrs.userGroupId]];
     } else {
       privateKey = blockstack.loadUserData().appPrivateKey;
     }

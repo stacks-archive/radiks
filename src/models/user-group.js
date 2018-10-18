@@ -1,10 +1,12 @@
-import { makeECPrivateKey, getPublicKeyFromPrivate } from 'blockstack/lib/keys';
+import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import { loadUserData } from 'blockstack/lib/auth/authApp';
 import { connectToGaiaHub } from 'blockstack/lib/storage/hub';
 
 import Model from '../model';
 import GroupMembership from './group-membership';
 import GroupInvitation from './group-invitation';
+import SigningKey from './signing-key';
+import { userGroupKeys, addUserGroupKey } from '../helpers';
 
 export default class UserGroup extends Model {
   static schema = {
@@ -32,10 +34,16 @@ export default class UserGroup extends Model {
   }
 
   async create() {
-    this.privateKey = makeECPrivateKey();
-    this.makeGaiaConfig();
+    // this.privateKey = makeECPrivateKey();
+    const signingKey = await SigningKey.create({ userGroupId: this.id });
+    this.attrs.signingKeyId = signingKey.id;
+    this.privateKey = signingKey.attrs.privateKey;
+    addUserGroupKey(this);
+    await this.makeGaiaConfig();
     const { username } = loadUserData();
+    // console.log('making group membership');
     const invitation = await this.makeGroupMembership(username);
+    // console.log(invitation);
     await invitation.activate();
     return this;
   }
@@ -59,6 +67,11 @@ export default class UserGroup extends Model {
     return this.publicKey();
   }
 
+  encryptionPrivateKey() {
+    const { signingKeys } = userGroupKeys();
+    return signingKeys[this.attrs.signingKeyId];
+  }
+
   async makeGaiaConfig() {
     const userData = loadUserData();
     const { appPrivateKey, hubUrl } = userData;
@@ -71,5 +84,15 @@ export default class UserGroup extends Model {
     const gaiaConfig = await connectToGaiaHub(hubUrl, appPrivateKey, scopes);
     this.attrs.gaiaConfig = gaiaConfig;
     return gaiaConfig;
+  }
+
+  getSigningKey() {
+    const { userGroups, signingKeys } = userGroupKeys();
+    const id = userGroups[this.id];
+    const privateKey = signingKeys[id];
+    return {
+      privateKey,
+      id,
+    };
   }
 }

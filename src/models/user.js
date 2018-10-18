@@ -3,6 +3,8 @@ import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 
 import Model from '../model';
 import SigningKey from './signing-key';
+import GroupMembership from './group-membership';
+import { addPersonalSigningKey } from '../helpers';
 
 const decrypted = true;
 
@@ -46,25 +48,36 @@ export default class BlockstackUser extends Model {
     return user;
   }
 
+  async createSigningKey() {
+    const key = await SigningKey.create();
+    this.attrs.signingKeyId = key.id;
+    return key;
+  }
+
   static createWithCurrentUser() {
     return new Promise((resolve, reject) => {
       const resolveUser = (user, _resolve) => user.save().then(() => {
-        _resolve(user);
+        GroupMembership.cacheKeys().then(() => {
+          _resolve(user);
+        });
       });
       try {
         const user = this.currentUser();
-        user.fetch().finally(() => {
+        user.fetch().catch((e) => {
+          // console.error('caught erro', e);
+        }).finally(() => {
+          // console.log(user.attrs);
           if (!user.attrs.signingKeyId) {
-            SigningKey.create().then((key) => {
-              user.attrs.signingKeyId = key.id;
+            user.createSigningKey().then((key) => {
+              addPersonalSigningKey(key);
               resolveUser(user, resolve);
             });
           } else {
-            resolveUser(user, resolve);
+            SigningKey.findById(user.attrs.signingKeyId).then((key) => {
+              addPersonalSigningKey(key);
+              resolveUser(user, resolve);
+            });
           }
-          user.save().then(() => {
-            resolve(user);
-          });
         });
       } catch (error) {
         reject(error);

@@ -7,7 +7,12 @@ import GroupMembership from './group-membership';
 export default class GroupInvitation extends Model {
   static schema = {
     userGroupId: String,
-    groupPrivateKey: String,
+    signingKeyPrivateKey: String,
+    signingKeyId: String,
+  }
+
+  static defaults = {
+    updatable: false,
   }
 
   static async makeInvitation(username, userGroup) {
@@ -16,7 +21,8 @@ export default class GroupInvitation extends Model {
     const { publicKey } = user.attrs;
     const invitation = new this({
       userGroupId: userGroup.id,
-      groupPrivateKey: userGroup.privateKey,
+      signingKeyPrivateKey: userGroup.privateKey,
+      signingKeyId: userGroup.attrs.signingKeyId,
     });
     invitation.userPublicKey = publicKey;
     await invitation.save();
@@ -27,7 +33,8 @@ export default class GroupInvitation extends Model {
     const groupMembership = new GroupMembership({
       userGroupId: this.attrs.userGroupId,
       username: loadUserData().username,
-      groupPrivateKey: this.attrs.groupPrivateKey,
+      signingKeyPrivateKey: this.attrs.signingKeyPrivateKey,
+      signingKeyId: this.attrs.signingKeyId,
     });
     await groupMembership.save();
     await GroupMembership.cacheKeys();

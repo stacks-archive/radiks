@@ -4,6 +4,7 @@ import Model from '../model';
 import User from './user';
 import UserGroup from './user-group';
 import { clearStorage, userGroupKeys, GROUP_MEMBERSHIPS_STORAGE_KEY } from '../helpers';
+import SigningKey from './signing-key';
 
 export default class GroupMembership extends Model {
   static schema = {
@@ -12,7 +13,8 @@ export default class GroupMembership extends Model {
       type: String,
       decrypted: true,
     },
-    groupPrivateKey: Object,
+    signingKeyPrivateKey: String,
+    signingKeyId: String,
   }
 
   static async fetchUserGroups() {
@@ -20,24 +22,29 @@ export default class GroupMembership extends Model {
     const memberships = await GroupMembership.fetchList({
       username,
     });
-    const fetchAll = memberships.map(membership => membership.fetchUserGroup());
-    const userGroups = await Promise.all(fetchAll);
-    const byId = {};
-    userGroups.forEach((userGroup) => {
-      byId[userGroup.id] = userGroup;
+    const signingKeys = {};
+    memberships.forEach(({ attrs }) => {
+      signingKeys[attrs.signingKeyId] = attrs.signingKeyPrivateKey;
     });
-    return byId;
+    const fetchAll = memberships.map(membership => membership.fetchUserGroupSigningKey());
+    const userGroupList = await Promise.all(fetchAll);
+    // console.log(userGroupList);
+    const userGroups = {};
+    userGroupList.forEach((userGroup) => {
+      userGroups[userGroup.id] = userGroup.signingKeyId;
+    });
+    return { userGroups, signingKeys };
   }
 
   static async cacheKeys() {
-    const userGroups = await this.fetchUserGroups();
-    const groupKeys = {};
+    const { userGroups, signingKeys } = await this.fetchUserGroups();
+    const groupKeys = userGroupKeys();
     const self = await User.findById(loadUserData().username);
-    groupKeys.personal = self.signingKeyId;
-    Object.keys(userGroups).forEach((id) => {
-      const group = userGroups[id];
-      groupKeys[id] = group.privateKey;
-    });
+    // console.log(self.attrs.signingKeyId);
+    const key = await SigningKey.findById(self.attrs.signingKeyId);
+    groupKeys.personal = key.attrs;
+    groupKeys.signingKeys = signingKeys;
+    groupKeys.userGroups = userGroups;
     localStorage.setItem(GROUP_MEMBERSHIPS_STORAGE_KEY, JSON.stringify(groupKeys));
   }
 
@@ -57,18 +64,12 @@ export default class GroupMembership extends Model {
 
   encryptionPrivateKey = () => loadUserData().appPrivateKey
 
-  async fetchUserGroup() {
-    const selector = {
-      radiksType: 'UserGroup',
-      _id: this.attrs.userGroupId,
+  async fetchUserGroupSigningKey() {
+    const id = this.attrs.userGroupId;
+    const { signingKeyId } = await this.constructor.db().get(id);
+    return {
+      id,
+      signingKeyId,
     };
-    const { docs } = await this.constructor.db().find({
-      selector,
-    });
-    const [attrs] = docs;
-    const userGroup = new UserGroup(attrs);
-    userGroup.privateKey = this.attrs.groupPrivateKey;
-    await userGroup.decrypt();
-    return userGroup;
   }
 }

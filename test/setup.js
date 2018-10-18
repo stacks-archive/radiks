@@ -1,48 +1,59 @@
 import 'mock-local-storage';
 import dotenv from 'dotenv';
+import PouchDB from 'pouchdb';
 
 import './mocks/crypto';
 import { makeECPrivateKey } from 'blockstack/lib/keys';
 import Model from '../src/model';
+import UserGroup from '../src/models/user-group';
 import { configure } from '../src/config';
 
 dotenv.load();
 
 jest.mock('../src/api', () => ({
   sendNewGaiaUrl: encrypted => new Promise(async (resolve) => {
-    // console.log('fake send gaia');
-    // console.log(process.env.COUCHDB_USERNAME);
-    // console.log(process.env.COUCHDB_PASSWORD);
     const PouchDB = require('pouchdb');
-    const db = new PouchDB('http://localhost:5984/radiks-testing', {
+    const username = process.env.COUCHDB_USERNAME;
+    const password = process.env.COUCHDB_PASSWORD;
+    const db = new PouchDB('http://localhost:5984/radiks-local-testing', {
       auth: {
-        username: process.env.COUCHDB_USERNAME,
-        password: process.env.COUCHDB_PASSWORD,
+        username,
+        password,
       },
     });
     encrypted._id = encrypted.id;
     const doc = await db.put(encrypted);
-    resolve({
-      success: true,
-      doc,
-    });
+    resolve(doc);
   }),
 }));
 
 const appPrivateKey = makeECPrivateKey();
 
 Model.prototype.saveFile = jest.fn(encrypted => new Promise(async (resolve) => {
-  // console.log('fake save', this);
   process.nextTick(() => {
     resolve(encrypted);
   });
 }));
 
-beforeAll(() => {
+UserGroup.prototype.makeGaiaConfig = () => new Promise(async (resolve) => {
+  process.nextTick(() => {
+    resolve();
+  });
+});
+
+beforeAll(async (t) => {
+  jest.setTimeout(20000);
+  let db = new PouchDB('http://localhost:5984/radiks-local-testing', {
+    auth: {
+      username: process.env.COUCHDB_USERNAME,
+      password: process.env.COUCHDB_PASSWORD,
+    },
+  });
+  await db.destroy();
+  db = new PouchDB('http://localhost:5984/radiks-local-testing');
   configure({
-    couchDBName: 'radiks-testing',
+    couchDBName: 'radiks-local-testing',
     couchDBUrl: 'http://localhost:5984',
-    apiServer: 'http://localhost:7654',
   });
 
   const blockstackConfig = JSON.stringify({
@@ -54,4 +65,18 @@ beforeAll(() => {
   });
 
   global.localStorage.setItem('blockstack', blockstackConfig);
+  setTimeout(200, () => t());
+});
+
+beforeEach(async () => {
+  const db = new PouchDB('http://localhost:5984/radiks-local-testing', {
+    auth: {
+      username: process.env.COUCHDB_USERNAME,
+      password: process.env.COUCHDB_PASSWORD,
+    },
+  });
+  try {
+    const doc = await db.get('fakeuser.id');
+    await db.remove(doc);
+  } catch (error) { } // eslint-disable-line no-empty
 });
