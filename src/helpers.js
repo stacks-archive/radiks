@@ -48,7 +48,7 @@ export const encryptObject = async (model) => {
   const publicKey = await model.encryptionPublicKey();
   const object = model.attrs;
   // console.log(object);
-  const encrypted = Object.assign({}, object, { id: model.id });
+  const encrypted = Object.assign({}, object, { _id: model._id });
   Object.keys(model.schema).forEach((key) => {
     const clazz = model.schema[key];
     const { decrypted } = clazz;
@@ -80,7 +80,7 @@ export const userGroupKeys = () => {
 export const addPersonalSigningKey = (signingKey) => {
   const keys = userGroupKeys();
   keys.personal = {
-    id: signingKey.id,
+    _id: signingKey._id,
     ...signingKey.attrs,
   };
   localStorage.setItem(GROUP_MEMBERSHIPS_STORAGE_KEY, JSON.stringify(keys));
@@ -88,7 +88,7 @@ export const addPersonalSigningKey = (signingKey) => {
 
 export const addUserGroupKey = (userGroup) => {
   const keys = userGroupKeys();
-  keys.userGroups[userGroup.id] = userGroup.attrs.signingKeyId;
+  keys.userGroups[userGroup._id] = userGroup.attrs.signingKeyId;
   keys.signingKeys[userGroup.attrs.signingKeyId] = userGroup.privateKey;
   localStorage.setItem(GROUP_MEMBERSHIPS_STORAGE_KEY, JSON.stringify(keys));
 };

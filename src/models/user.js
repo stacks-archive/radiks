@@ -4,7 +4,7 @@ import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import Model from '../model';
 import SigningKey from './signing-key';
 import GroupMembership from './group-membership';
-import { addPersonalSigningKey } from '../helpers';
+import { addPersonalSigningKey, userGroupKeys } from '../helpers';
 
 const decrypted = true;
 
@@ -39,7 +39,7 @@ export default class BlockstackUser extends Model {
     const publicKey = getPublicKeyFromPrivate(appPrivateKey);
     const Clazz = this;
     const user = new Clazz({
-      id: username,
+      _id: username,
       username,
       publicKey,
       profile,
@@ -50,7 +50,7 @@ export default class BlockstackUser extends Model {
 
   async createSigningKey() {
     const key = await SigningKey.create();
-    this.attrs.signingKeyId = key.id;
+    this.attrs.signingKeyId = key._id;
     return key;
   }
 
@@ -64,7 +64,7 @@ export default class BlockstackUser extends Model {
       try {
         const user = this.currentUser();
         user.fetch().catch((e) => {
-          // console.error('caught erro', e);
+          console.error('caught erro', e);
         }).finally(() => {
           // console.log(user.attrs);
           if (!user.attrs.signingKeyId) {

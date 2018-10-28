@@ -20,7 +20,7 @@ export default class GroupInvitation extends Model {
     await user.fetch();
     const { publicKey } = user.attrs;
     const invitation = new this({
-      userGroupId: userGroup.id,
+      userGroupId: userGroup._id,
       signingKeyPrivateKey: userGroup.privateKey,
       signingKeyId: userGroup.attrs.signingKeyId,
     });

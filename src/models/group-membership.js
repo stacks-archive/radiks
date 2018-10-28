@@ -28,10 +28,9 @@ export default class GroupMembership extends Model {
     });
     const fetchAll = memberships.map(membership => membership.fetchUserGroupSigningKey());
     const userGroupList = await Promise.all(fetchAll);
-    // console.log(userGroupList);
     const userGroups = {};
     userGroupList.forEach((userGroup) => {
-      userGroups[userGroup.id] = userGroup.signingKeyId;
+      userGroups[userGroup._id] = userGroup.signingKeyId;
     });
     return { userGroups, signingKeys };
   }
@@ -40,7 +39,6 @@ export default class GroupMembership extends Model {
     const { userGroups, signingKeys } = await this.fetchUserGroups();
     const groupKeys = userGroupKeys();
     const self = await User.findById(loadUserData().username);
-    // console.log(self.attrs.signingKeyId);
     const key = await SigningKey.findById(self.attrs.signingKeyId);
     groupKeys.personal = key.attrs;
     groupKeys.signingKeys = signingKeys;
@@ -65,10 +63,10 @@ export default class GroupMembership extends Model {
   encryptionPrivateKey = () => loadUserData().appPrivateKey
 
   async fetchUserGroupSigningKey() {
-    const id = this.attrs.userGroupId;
-    const { signingKeyId } = await this.constructor.db().get(id);
+    const _id = this.attrs.userGroupId;
+    const { signingKeyId } = (await UserGroup.findById(_id)).attrs;
     return {
-      id,
+      _id,
       signingKeyId,
     };
   }

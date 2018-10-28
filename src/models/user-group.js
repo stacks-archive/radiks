@@ -35,11 +35,11 @@ export default class UserGroup extends Model {
 
   async create() {
     // this.privateKey = makeECPrivateKey();
-    const signingKey = await SigningKey.create({ userGroupId: this.id });
-    this.attrs.signingKeyId = signingKey.id;
+    const signingKey = await SigningKey.create({ userGroupId: this._id });
+    this.attrs.signingKeyId = signingKey._id;
     this.privateKey = signingKey.attrs.privateKey;
     addUserGroupKey(this);
-    await this.makeGaiaConfig();
+    // await this.makeGaiaConfig();
     const { username } = loadUserData();
     // console.log('making group membership');
     const invitation = await this.makeGroupMembership(username);
@@ -50,10 +50,10 @@ export default class UserGroup extends Model {
 
   async makeGroupMembership(username) {
     const invitation = await GroupInvitation.makeInvitation(username, this);
-    invitation.activate();
+    // invitation.activate();
     this.attrs.members.push({
       username,
-      inviteId: invitation.id,
+      inviteId: invitation._id,
     });
     await this.save();
     return invitation;
@@ -78,7 +78,7 @@ export default class UserGroup extends Model {
     const scopes = [
       {
         scope: 'putFilePrefix',
-        domain: `UserGroups/${this.id}/`,
+        domain: `UserGroups/${this._id}/`,
       },
     ];
     const gaiaConfig = await connectToGaiaHub(hubUrl, appPrivateKey, scopes);
@@ -88,7 +88,7 @@ export default class UserGroup extends Model {
 
   getSigningKey() {
     const { userGroups, signingKeys } = userGroupKeys();
-    const id = userGroups[this.id];
+    const id = userGroups[this._id];
     const privateKey = signingKeys[id];
     return {
       privateKey,

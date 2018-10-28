@@ -2,15 +2,11 @@ import uuid from 'uuid/v4';
 import * as blockstack from 'blockstack';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import { signECDSA } from 'blockstack/lib/encryption';
-import PouchDB from 'pouchdb';
-import PouchFind from 'pouchdb-find';
-import { getConfig } from './config';
+// import { getConfig } from './config';
 
 import { encryptObject, decryptObject, userGroupKeys } from './helpers';
-import { sendNewGaiaUrl } from './api';
+import { sendNewGaiaUrl, find } from './api';
 // import { GroupMembership } from './index';
-
-PouchDB.plugin(PouchFind);
 
 export default class Model {
   static apiServer = null;
@@ -27,8 +23,9 @@ export default class Model {
       ..._selector,
       radiksType: this.name,
     };
-    const db = this.db();
-    const { docs } = await db.find({ selector, ...options });
+    // const db = this.db();
+    // const { docs } = await db.find({ selector, ...options });
+    const docs = await find(selector);
     const Clazz = this;
     const modelDecryptions = docs.map((doc) => {
       const model = new Clazz(doc);
@@ -41,16 +38,16 @@ export default class Model {
     return models;
   }
 
-  static findById(id, fetchOptions) {
+  static findById(_id, fetchOptions) {
     const Clazz = this;
-    const model = new Clazz({ id });
+    const model = new Clazz({ _id });
     return model.fetch(fetchOptions);
   }
 
   constructor(attrs = {}) {
     const { schema, defaults, name } = this.constructor;
     this.schema = schema;
-    this.id = attrs.id || uuid().replace('-', '');
+    this._id = attrs._id || uuid().replace('-', '');
     this.attrs = {
       ...defaults,
       ...attrs,
@@ -67,8 +64,7 @@ export default class Model {
         await this.sign();
         const encrypted = await this.encrypted();
         const gaiaURL = await this.saveFile(encrypted);
-        const doc = await sendNewGaiaUrl(gaiaURL);
-        this.attrs._rev = doc.rev;
+        await sendNewGaiaUrl(gaiaURL);
         resolve(this);
       } catch (error) {
         reject(error);
@@ -85,7 +81,7 @@ export default class Model {
   }
 
   blockstackPath() {
-    const path = `${this.constructor.name}/${this.id}`;
+    const path = `${this.constructor.name}/${this._id}`;
     return path;
   }
 
@@ -93,28 +89,28 @@ export default class Model {
     return this.constructor.db();
   }
 
-  static db() {
-    const { couchDBName, couchDBUrl } = getConfig();
-    let url = '';
-    if (couchDBUrl) {
-      url += `${couchDBUrl}/`;
-    }
-    url += couchDBName;
-    return new PouchDB(url);
-  }
+  // static db() {
+  //   const { couchDBName, couchDBUrl } = getConfig();
+  //   let url = '';
+  //   if (couchDBUrl) {
+  //     url += `${couchDBUrl}/`;
+  //   }
+  //   url += couchDBName;
+  //   return new PouchDB(url);
+  // }
 
   async fetch({ decrypt = true } = {}) {
-    const attrs = await this.db().get(this.id);
-    // console.log('db attrs', attrs.signingKeyId);
+    const query = {
+      _id: this._id,
+    };
+    const [attrs] = await find(query);
     this.attrs = {
       ...this.attrs,
       ...attrs,
     };
-    // console.log('fetching', this.constructor.name, decrypt);
     if (decrypt) {
       await this.decrypt();
     }
-    // console.log('after decrypt', this.attrs.signingKeyId);
     if (this.afterFetch) await this.afterFetch();
     return this;
   }
@@ -136,17 +132,16 @@ export default class Model {
       return true;
     }
     const signingKey = this.getSigningKey();
-    // const oldSigningKeyId = this.attrs.signingKeyId || signingKey.id;
-    this.attrs.signingKeyId = signingKey.id;
+    this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
     const { privateKey } = signingKey;
-    // // if a user group rotates keys, we need to sign with the old key
-    // if (oldSigningKeyId !== signingKey.id) {
-    //   privateKey = userGroupKeys().signingKeys[oldSigningKeyId];
-    // }
-    const contentToSign = [this.id];
-    if (this.attrs._rev) {
-      contentToSign.push(this.attrs._rev);
+    const contentToSign = [this._id];
+    if (this.attrs.updatedAt) {
+      contentToSign.push(this.attrs.updatedAt);
     }
+    // if (!privateKey) {
+    //   console.log(this.attrs.radiksType, this.attrs.userGroupId);
+    //   console.log(userGroupKeys());
+    // }
     const { signature } = signECDSA(privateKey, contentToSign.join('-'));
     this.attrs.radiksSignature = signature;
     return this;
@@ -156,10 +151,10 @@ export default class Model {
     if (this.attrs.userGroupId) {
       const { userGroups, signingKeys } = userGroupKeys();
 
-      const id = userGroups[this.attrs.userGroupId];
-      const privateKey = signingKeys[id];
+      const _id = userGroups[this.attrs.userGroupId];
+      const privateKey = signingKeys[_id];
       return {
-        id,
+        _id,
         privateKey,
       };
     }

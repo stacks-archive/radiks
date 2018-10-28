@@ -8,8 +8,9 @@ import SigningKey from '../../src/models/signing-key';
 
 test('creates currentUser from localStorage user', async (t) => {
   const user = User.currentUser();
-  expect(user.attrs.username).toEqual('fakeuser.id');
-  expect(user.id).toEqual('fakeuser.id');
+  const { username } = loadUserData();
+  expect(user.attrs.username).toEqual(username);
+  expect(user._id).toEqual(username);
   const { appPrivateKey } = loadUserData();
   const publicKey = getPublicKeyFromPrivate(appPrivateKey);
   expect(user.attrs.publicKey).toEqual(publicKey);
@@ -33,7 +34,7 @@ test('saves a user with a signing key', async () => {
   await user.fetch();
   expect(user.attrs.signingKeyId).toEqual(oldkey);
 
-  const savedUser = await User.findById(user.id, { decrypt: false });
+  const savedUser = await User.findById(user._id, { decrypt: false });
 
   expect(savedUser.attrs.username).toEqual(user.attrs.username);
   expect(savedUser.attrs.profile).toEqual(user.attrs.profile);
@@ -42,13 +43,5 @@ test('saves a user with a signing key', async () => {
   expect(savedUser.attrs.signingKeyId).not.toEqual(user.attrs.signingKeyId);
 
   const signingKey = await SigningKey.findById(user.attrs.signingKeyId);
-  expect(signingKey.id).toEqual(user.attrs.signingKeyId);
+  expect(signingKey._id).toEqual(user.attrs.signingKeyId);
 });
-
-// test('saves a signing key', async (t) => {
-//   const user = await User.createWithCurrentUser();
-//   // console.log(user.attrs.signingKeyId);
-
-//   t();
-// });
-// });

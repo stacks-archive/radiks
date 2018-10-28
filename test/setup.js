@@ -1,33 +1,36 @@
 import 'mock-local-storage';
 import dotenv from 'dotenv';
-import PouchDB from 'pouchdb';
+import { MongoClient } from 'mongodb';
+import faker from 'faker';
 
 import './mocks/crypto';
 import { makeECPrivateKey } from 'blockstack/lib/keys';
 import Model from '../src/model';
-import UserGroup from '../src/models/user-group';
-import { configure } from '../src/config';
+// import UserGroup from '../src/models/user-group';
+// import { configure } from '../src/config';
 
 dotenv.load();
 
 jest.mock('../src/api', () => ({
   sendNewGaiaUrl: encrypted => new Promise(async (resolve) => {
-    const PouchDB = require('pouchdb');
-    const username = process.env.COUCHDB_USERNAME;
-    const password = process.env.COUCHDB_PASSWORD;
-    const db = new PouchDB('http://localhost:5984/radiks-local-testing', {
-      auth: {
-        username,
-        password,
-      },
-    });
-    encrypted._id = encrypted.id;
-    const doc = await db.put(encrypted);
-    resolve(doc);
+    // console.log('sendNewGaiaUrl');
+    const { MongoClient } = require('mongodb');
+    const url = 'mongodb://localhost:27017/radiks-test-server';
+    const client = await MongoClient.connect(url, { useNewUrlParser: true });
+    const collection = client.db().collection('radiks-testing-models');
+    // console.log(encrypted);
+    await collection.insertOne(encrypted);
+    resolve();
+  }),
+  find: query => new Promise(async (resolve, reject) => {
+    const { MongoClient } = require('mongodb');
+    const url = 'mongodb://localhost:27017/radiks-test-server';
+    const client = await MongoClient.connect(url, { useNewUrlParser: true });
+    const collection = client.db().collection('radiks-testing-models');
+    const result = await collection.find(query).toArray();
+    resolve(result);
   }),
 }));
-
-const appPrivateKey = makeECPrivateKey();
 
 Model.prototype.saveFile = jest.fn(encrypted => new Promise(async (resolve) => {
   process.nextTick(() => {
@@ -35,48 +38,34 @@ Model.prototype.saveFile = jest.fn(encrypted => new Promise(async (resolve) => {
   });
 }));
 
-UserGroup.prototype.makeGaiaConfig = () => new Promise(async (resolve) => {
-  process.nextTick(() => {
-    resolve();
-  });
+// UserGroup.prototype.makeGaiaConfig = () => new Promise(async (resolve) => {
+//   process.nextTick(() => {
+//     resolve();
+//   });
+// });
+
+let collection;
+
+beforeAll(async () => {
+  const url = 'mongodb://localhost:27017/radiks-test-server';
+  const client = await MongoClient.connect(url, { useNewUrlParser: true });
+  collection = client.db().collection('radiks-testing-models');
 });
 
-beforeAll(async (t) => {
-  jest.setTimeout(20000);
-  let db = new PouchDB('http://localhost:5984/radiks-local-testing', {
-    auth: {
-      username: process.env.COUCHDB_USERNAME,
-      password: process.env.COUCHDB_PASSWORD,
-    },
-  });
-  await db.destroy();
-  db = new PouchDB('http://localhost:5984/radiks-local-testing');
-  configure({
-    couchDBName: 'radiks-local-testing',
-    couchDBUrl: 'http://localhost:5984',
-  });
-
+beforeEach(async () => {
+  try {
+    await collection.drop();
+  } catch (error) {
+    // collection doesn't exist
+  }
+  const appPrivateKey = makeECPrivateKey();
   const blockstackConfig = JSON.stringify({
     appPrivateKey,
-    username: 'fakeuser.id',
+    username: faker.name.findName(),
     profile: {
       // TODO
     },
   });
 
   global.localStorage.setItem('blockstack', blockstackConfig);
-  setTimeout(200, () => t());
-});
-
-beforeEach(async () => {
-  const db = new PouchDB('http://localhost:5984/radiks-local-testing', {
-    auth: {
-      username: process.env.COUCHDB_USERNAME,
-      password: process.env.COUCHDB_PASSWORD,
-    },
-  });
-  try {
-    const doc = await db.get('fakeuser.id');
-    await db.remove(doc);
-  } catch (error) { } // eslint-disable-line no-empty
 });
