@@ -2,11 +2,9 @@ import uuid from 'uuid/v4';
 import * as blockstack from 'blockstack';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import { signECDSA } from 'blockstack/lib/encryption';
-// import { getConfig } from './config';
 
 import { encryptObject, decryptObject, userGroupKeys } from './helpers';
 import { sendNewGaiaUrl, find } from './api';
-// import { GroupMembership } from './index';
 
 export default class Model {
   static apiServer = null;
@@ -21,13 +19,11 @@ export default class Model {
   static async fetchList(_selector, options = {}, { decrypt = true } = {}) {
     const selector = {
       ..._selector,
-      radiksType: this.name,
+      radiksType: this.modelName(),
     };
-    // const db = this.db();
-    // const { docs } = await db.find({ selector, ...options });
-    const docs = await find(selector);
+    const { results } = await find(selector);
     const Clazz = this;
-    const modelDecryptions = docs.map((doc) => {
+    const modelDecryptions = results.map((doc) => {
       const model = new Clazz(doc);
       if (decrypt) {
         model.decrypt();
@@ -45,7 +41,8 @@ export default class Model {
   }
 
   constructor(attrs = {}) {
-    const { schema, defaults, name } = this.constructor;
+    const { schema, defaults } = this.constructor;
+    const name = this.modelName();
     this.schema = schema;
     this._id = attrs._id || uuid().replace('-', '');
     this.attrs = {
@@ -81,7 +78,7 @@ export default class Model {
   }
 
   blockstackPath() {
-    const path = `${this.constructor.name}/${this._id}`;
+    const path = `${this.modelName()}/${this._id}`;
     return path;
   }
 
@@ -103,7 +100,8 @@ export default class Model {
     const query = {
       _id: this._id,
     };
-    const [attrs] = await find(query);
+    const { results } = await find(query);
+    const [attrs] = results;
     this.attrs = {
       ...this.attrs,
       ...attrs,
@@ -172,5 +170,13 @@ export default class Model {
       privateKey = blockstack.loadUserData().appPrivateKey;
     }
     return privateKey;
+  }
+
+  static modelName() {
+    return this.name;
+  }
+
+  modelName() {
+    return this.constructor.modelName();
   }
 }
