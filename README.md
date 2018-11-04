@@ -2,8 +2,6 @@
 
 A client-side framework for building model-driven decentralized applications on top of [Blockstack](https://blockstack.org) storage and authentication.
 
-To see a running example of an application with radiks, check out [Kanstack](https://kanstack.com) or [on Github](https://github.com/hstove/kanstack).
-
 <!-- TOC depthFrom:2 -->
 
 - [Why?](#why)
@@ -39,24 +37,20 @@ Some apps end up running into limitations when building complex applications, th
 
 - Storing and querying complex data
 - Indexing data to easily query user's publicly saved data
-- Collaboration with other users (in progress)
+- Collaboration with other users
 - Real-time updates (in progress)
 
 ## How?
 
-The crux of radiks is that it's built on top of CouchDB, in combination with PouchDB. Whenever a users saves or updates a model, radiks follows this process:
+The crux of radiks is that it's built to be used with [Radiks-server](https://github.com/hstove/radiks-server), which is an indexing server for decentralized apps. Whenever a users saves or updates a model, radiks follows this process:
 
 1. Encrypt private data on the client-side
-2. Save a raw JSON version of this file in Gaia
-3. Store the encrypted data in CouchDB, making it easy to query in the future.
+2. Save a raw JSON version of this encrypted data in [Gaia](https://github.com/blockstack/gaia)
+3. Store the encrypted data in [Radiks-server](https://github.com/hstove/radiks-server), making it easy to query in the future.
 
 ### How authorization works
 
-Application developer's don't want users to have full control over writes to their database. Instead, users should only be able to write to data that they explicitly 'own'. To do this, radiks utilizes CouchDB authentication, where a users 'signs in' to CouchDB using their Blockstack username and a message signed with their private key as their password.
-
-When a user first signs up, they must pass this signed message to a radiks-server instance. That server will validate the signature, and if it's valid, will create their user record in CouchDB. All future writes will skip this server and simply authenticate to CouchDB with their signed message.
-
-Thus, this initial authorization step is the most centralized aspect of the radiks workflow. Although the server never stores a password, it still requires a centralized server to validate the signature. In the future, we may experiment with a fork of CouchDB to provide this functionality in a built-in way.
+Application developer's don't want users to have full control over writes to their database. Instead, users should only be able to write to data that they explicitly 'own'. To do this, Radiks creates 'signing keys', and signs all data using this signing key. The indexing server, Radiks-server, will only allow writes that are appropriately signed. [Learn more about authorization](https://github.com/hstove/radiks-server/tree/master#authorization)
 
 ## So, is it decentralized?
 
@@ -87,20 +81,16 @@ npm install --save radiks
 
 ### Configuration
 
-There are two main things you need to configure when using radiks:
+To set up radiks.js, you only need to configure the URL that your Radiks-server instance is running on. If you're using the pre-built Radiks server, this will be `http://localhost:1260`. If you're in production or are using a custom Radiks server, you'll need to specify exactly which URL it's available at.
 
-1. Your API server URL. This is the server that is running `radiks-server`. In development, this will be a localhost URL with whatever port you're running, like `http://localhost:3000`. In production, you'll want to configure this to your production URL.
-  - If you're running your API server on the same server that sends your client-side code, you don't need to configure this. Radiks will default to `document.location.origin`. 
-
-2. Your CouchDB URL. In development, this will probably be `http://127.0.0.1:5984`. In production, you'll need to host CouchDB on a publicly-accessible server.
-
-To configure radiks, use code that looks like this:
+To configure radiks, use code that looks like this when starting up your application:
 
 ~~~javascript
-import Radiks from 'radiks';
+import { configure } from 'radiks';
 
-Radiks.apiServer = 'http://localhost:3000';
-Radiks.couchDBServer = 'http://localhost:5984';
+configure({
+  apiServer: 'http://my-radiks-server.com'
+});
 ~~~
 
 ### Authentication
@@ -111,17 +101,22 @@ After your user logs in with Blockstack, you'll have some code to save the user'
 
 ~~~javascript
 import * as Blockstack from 'blockstack';
-import { signUp } from 'radiks/lib/helpers';
+import { User } from 'radiks';
 
 const handleSignIn = () => {
   if (blockstack.isSignInPending()) {
-    const userData = await blockstack.handlePendingSignIn();
-    await signUp(userData);
+    await blockstack.handlePendingSignIn();
+    await User.createWithCurrentUser();
   }
 }
 ~~~
 
-Calling `signUp` will follow the [authorization](#authorization) flow described above. If the user has already authenticed with `radiks-server`, you don't need to do anything, as the function will handle that case and continue.
+Calling `User.createWithCurrentUser` will do a few things:
+
+1. Fetch user data that Blockstack.js stores in `localStorage`
+2. Save the user's public data (including their public key) in Radiks-server
+3. Find or create a signing key that is used to authorize writes on behalf of this user
+4. Cache the user's signing key (and any group-related signing keys) to make signatures and decryption happen quickly later on
 
 ### Models
 
@@ -169,9 +164,9 @@ class Person extends Model {
 
 #### Using models
 
-All model instances have an `id` attribute. If you don't pass an `id` to the model (when constructing it), then an `id` will be created automatically using [`uuid/v4`](https://github.com/kelektiv/node-uuid). This `id` is used as a primary key when storing data, and would be used for fetching this model in the future.
+All model instances have an `_id` attribute. If you don't pass an `_id` to the model (when constructing it), then an `_id` will be created automatically using [`uuid/v4`](https://github.com/kelektiv/node-uuid). This `_id` is used as a primary key when storing data, and would be used for fetching this model in the future.
 
-In addition to automatically creating an `id` attribute, radiks also creates a `createdBy` property when creating and saving models. The value of this property is the Blockstack username of the logged-in user. This field is passed unencrypted to the database, which is vital for authorization, and is useful for querying all instances created by a certain user.
+In addition to automatically creating an `_id` attribute, radiks also creates a `createdAt` and `updatedAt` property when creating and saving models.
 
 ##### Constructing a model
 
@@ -190,8 +185,7 @@ const person = new Person({
 To fetch an existing model, first construct it with a required `id` property. Then, call the `fetch()` function, which returns a promise.
 
 ~~~javascript
-const person = new Person({ id: '404eab3a-6ddc-4ba6-afe8-1c3fff464d44' });
-await person.fetch()
+const person = await Person.findById('404eab3a-6ddc-4ba6-afe8-1c3fff464d44');
 ~~~
 
 After calling `fetch`, radiks will automatically decrypt all encrypted fields.
@@ -229,11 +223,7 @@ await person.save();
 
 #### Querying models
 
-To fetch multiple records that match a certain query, use the class's `fetchList` function. This function is mostly a wrapper around the PouchDB `pouch-find` package. After fetching data, all returned models are client-side decrypted.
-
-The first argument is a `selector`, which matches based on certain fields. The second argument is optional, and is merged with your `selector` argument to pass further options to your mango query.
-
-To learn more about querying options, check out PouchDB's [Mango queries](https://pouchdb.com/guides/mango-queries.html) documentation.
+To fetch multiple records that match a certain query, use the class's `fetchList` function. This method creates an HTTP query to Radiks-server, which then queries the underlying database. Radiks-server uses the [`query-to-mongo`](https://github.com/pbatey/query-to-mongo) package to turn an HTTP query into a MongoDB query. Read the documentation for that package to learn how to do complex querying, sorting, limiting, etc.
 
 Here are some examples:
 
@@ -259,10 +249,8 @@ class Task extends Model {
 }
 
 const tasks = await Task.fetchList({
-  createdBy: blockstack.loadUserData().username,
   completed: false,
-}, {
-  sort: ['order']
+  sort: '-order'
 })
 ~~~
 
@@ -292,7 +280,7 @@ Whenever you save a task, you'll want to save a reference to the project it's in
 ~~~javascript
 const task = new Task({
   name: 'Improve radiks documentation',
-  projectId: project.id
+  projectId: project._id
 })
 await task.save();
 ~~~
@@ -301,7 +289,7 @@ Then, later you'll want to fetch all tasks for a certain project:
 
 ~~~javascript
 const tasks = await Task.fetchList({
-  projectId: project.id,
+  projectId: project._id,
 })
 ~~~
 
@@ -318,8 +306,7 @@ class Project extends Model {
   }
 }
 
-const project = new Project({ id: 'some-id-here' });
-await project.fetch();
+const project = await Project.findById('some-id-here');
 console.log(project.tasks); // will already have fetch and decrypted all related tasks
 ~~~
 
