@@ -59,6 +59,12 @@ export default class UserGroup extends Model {
     return invitation;
   }
 
+  static myGroups() {
+    const { userGroups } = userGroupKeys();
+    const keys = Object.keys(userGroups);
+    return this.fetchList({ _id: keys.join(',') });
+  }
+
   publicKey() {
     return getPublicKeyFromPrivate(this.privateKey);
   }
