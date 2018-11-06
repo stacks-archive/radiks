@@ -82,20 +82,6 @@ export default class Model {
     return path;
   }
 
-  db() {
-    return this.constructor.db();
-  }
-
-  // static db() {
-  //   const { couchDBName, couchDBUrl } = getConfig();
-  //   let url = '';
-  //   if (couchDBUrl) {
-  //     url += `${couchDBUrl}/`;
-  //   }
-  //   url += couchDBName;
-  //   return new PouchDB(url);
-  // }
-
   async fetch({ decrypt = true } = {}) {
     const query = {
       _id: this._id,
@@ -136,10 +122,6 @@ export default class Model {
     if (this.attrs.updatedAt) {
       contentToSign.push(this.attrs.updatedAt);
     }
-    // if (!privateKey) {
-    //   console.log(this.attrs.radiksType, this.attrs.userGroupId);
-    //   console.log(userGroupKeys());
-    // }
     const { signature } = signECDSA(privateKey, contentToSign.join('-'));
     this.attrs.radiksSignature = signature;
     return this;
