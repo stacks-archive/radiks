@@ -40,7 +40,9 @@
   },
   "scripts": {
     "compile": "babel src -d lib",
-    "compile-watch": "nodemon -x 'yarn compile' -i lib"
+    "compile-watch": "babel src -d lib --watch",
+    "test": "jest --verbose=false --watch --ci --runInBand",
+    "eslint": "eslint src"
   },
   "jest": {}
 }

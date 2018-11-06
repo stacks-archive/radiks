@@ -27,8 +27,8 @@ jest.mock('../src/api', () => ({
     const url = 'mongodb://localhost:27017/radiks-test-server';
     const client = await MongoClient.connect(url, { useNewUrlParser: true });
     const collection = client.db().collection('radiks-testing-models');
-    const result = await collection.find(query).toArray();
-    resolve(result);
+    const results = await collection.find(query).toArray();
+    resolve({ results });
   }),
 }));
 

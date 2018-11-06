@@ -16,7 +16,7 @@ export default class Model {
 
   static defaults = {}
 
-  static async fetchList(_selector, options = {}, { decrypt = true } = {}) {
+  static async fetchList(_selector, { decrypt = true } = {}) {
     const selector = {
       ..._selector,
       radiksType: this.modelName(),
