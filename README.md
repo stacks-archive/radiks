@@ -330,10 +330,10 @@ The general workflow for creating a collaborative group that can share and edit 
 
 1. The admin of the group creates a new `UserGroup`, which acts as the 'hub' and controls the logic around inviting and removing users.
 2. The admin invites one or more other users to a group:
-  1. The admin specifies the username of the user they want to invite
-  2. Radiks looks up the user's public key
-  3. Radiks creates an 'invitation' that is encrypted with the user's public key, and contains information about the `UserGroup`
-  4. When the invited user 'activates' an invitation, they create a `GroupMembership`, which they can later use to reference information (such as private keys and signing keys) related to the group.
+    1. The admin specifies the username of the user they want to invite
+    2. Radiks looks up the user's public key
+    3. Radiks creates an 'invitation' that is encrypted with the user's public key, and contains information about the `UserGroup`
+    4. When the invited user 'activates' an invitation, they create a `GroupMembership`, which they can later use to reference information (such as private keys and signing keys) related to the group.
 3. Later on, members of the group can create and update models that are related to the group. These models **must** contain a reference to the group, using the attribute `userGroupId`. This allows Radiks to know which keys to use for encryption and signing.
 4. The admin of the group can later remove a user from a group. They do this by creating a new private key for signing and encryption, and updating the `GroupMembership` of all users _except_ the user they just removed.
 5. After a key is rotated, all new and updated models must use the new key for signing. Radiks-server validates all group-related models to ensure that they're signed with the most up-to-date key.
