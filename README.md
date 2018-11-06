@@ -147,7 +147,7 @@ Include an optional `defaults` static property to define default values for a fi
 #### Example
 
 ~~~javascript
-import Model from 'radiks/lib/model';
+import { Model } from 'radiks';
 
 class Person extends Model {
   static schema = {
@@ -311,7 +311,7 @@ class Project extends Model {
 }
 
 const project = await Project.findById('some-id-here');
-console.log(project.tasks); // will already have fetch and decrypted all related tasks
+console.log(project.tasks); // will already have fetched and decrypted all related tasks
 ~~~
 
 ## Collaboration
