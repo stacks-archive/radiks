@@ -9,29 +9,28 @@ A client-side framework for building model-driven decentralized applications on 
   - [How authorization works](#how-authorization-works)
 - [So, is it decentralized?](#so-is-it-decentralized)
 - [Installation](#installation)
-- [Usage](#usage)
-  - [Configuration](#configuration)
-  - [Authentication](#authentication)
-  - [Models](#models)
-    - [Defining a model](#defining-a-model)
-      - [Schema](#schema)
-      - [Defaults](#defaults)
-      - [Example](#example)
-    - [Using models](#using-models)
-      - [Constructing a model](#constructing-a-model)
-      - [Fetching a model](#fetching-a-model)
-      - [Accessing model attributes](#accessing-model-attributes)
-      - [Updating a model](#updating-a-model)
-      - [Saving a model](#saving-a-model)
-    - [Querying models](#querying-models)
-    - [Managing relational data](#managing-relational-data)
-  - [Collaboration](#collaboration)
-    - [UserGroup Model](#usergroup-model)
-    - [General Workflow](#general-workflow)
-      - [Creating a UserGroup](#creating-a-usergroup)
-      - [Inviting a User](#inviting-a-user)
-      - [Accepting an invitation](#accepting-an-invitation)
-      - [Viewing all activated UserGroups for the current user](#viewing-all-activated-usergroups-for-the-current-user)
+- [Configuration](#configuration)
+- [Authentication](#authentication)
+- [Models](#models)
+  - [Defining a model](#defining-a-model)
+    - [Schema](#schema)
+    - [Defaults](#defaults)
+    - [Example](#example)
+  - [Using models](#using-models)
+    - [Constructing a model](#constructing-a-model)
+    - [Fetching a model](#fetching-a-model)
+    - [Accessing model attributes](#accessing-model-attributes)
+    - [Updating a model](#updating-a-model)
+    - [Saving a model](#saving-a-model)
+  - [Querying models](#querying-models)
+  - [Managing relational data](#managing-relational-data)
+- [Collaboration](#collaboration)
+  - [UserGroup Model](#usergroup-model)
+  - [General Workflow](#general-workflow)
+    - [Creating a UserGroup](#creating-a-usergroup)
+    - [Inviting a User](#inviting-a-user)
+    - [Accepting an invitation](#accepting-an-invitation)
+    - [Viewing all activated UserGroups for the current user](#viewing-all-activated-usergroups-for-the-current-user)
 - [Development](#development)
 
 <!-- /TOC -->
@@ -84,9 +83,7 @@ yarn add radiks
 npm install --save radiks
 ~~~
 
-## Usage
-
-### Configuration
+## Configuration
 
 To set up radiks.js, you only need to configure the URL that your Radiks-server instance is running on. If you're using the pre-built Radiks server, this will be `http://localhost:1260`. If you're in production or are using a custom Radiks server, you'll need to specify exactly which URL it's available at.
 
@@ -100,7 +97,7 @@ configure({
 });
 ~~~
 
-### Authentication
+## Authentication
 
 Most of your code will be informed by following [Blockstack's authentication documentation](https://github.com/blockstack/blockstack.js/blob/master/src/auth/README.md).
 
@@ -125,15 +122,15 @@ Calling `User.createWithCurrentUser` will do a few things:
 3. Find or create a signing key that is used to authorize writes on behalf of this user
 4. Cache the user's signing key (and any group-related signing keys) to make signatures and decryption happen quickly later on
 
-### Models
+## Models
 
 Creating models for your application's data is where radiks truly becomes helpful. We provide a `Model` class that you can extend to easily create, save, and fetch models.
 
-#### Defining a model
+### Defining a model
 
 To create a model class, first import the `Model` class from radiks. Then, create a class that extends this model, and provide a schema.
 
-##### Schema
+#### Schema
 
 The first static property you'll need to define is a schema. Create a static `schema` property on your class to define it. Each `key` in this object is the name of the field. The value is whatever type you want the field to be, or you can pass some options.
 
@@ -143,11 +140,11 @@ To include options, pass an object, with a mandatory `type` field. The only supp
 
 **Important**: do not add the `decrypted` option to fields that contain sensitive user data. Remember, because this is decentralized storage, anyone can read the user's data. That's why encrypting it is so important. If you want to be able to filter sensitive data, then you should do it on the client-side, after decrypting it. A good use-case for storing decrypted fields is to store a `foreignId` that references a different model, for a "belongs-to" type of relation.
 
-##### Defaults
+#### Defaults
 
 Include an optional `defaults` static property to define default values for a field.
 
-##### Example
+#### Example
 
 ~~~javascript
 import Model from 'radiks/lib/model';
@@ -169,13 +166,13 @@ class Person extends Model {
 }
 ~~~
 
-#### Using models
+### Using models
 
 All model instances have an `_id` attribute. If you don't pass an `_id` to the model (when constructing it), then an `_id` will be created automatically using [`uuid/v4`](https://github.com/kelektiv/node-uuid). This `_id` is used as a primary key when storing data, and would be used for fetching this model in the future.
 
 In addition to automatically creating an `_id` attribute, radiks also creates a `createdAt` and `updatedAt` property when creating and saving models.
 
-##### Constructing a model
+#### Constructing a model
 
 To create an instance of a model, pass some attributes to the constructor of that class:
 
@@ -187,7 +184,7 @@ const person = new Person({
 })
 ~~~
 
-##### Fetching a model
+#### Fetching a model
 
 To fetch an existing model, first construct it with a required `id` property. Then, call the `fetch()` function, which returns a promise.
 
@@ -197,7 +194,7 @@ const person = await Person.findById('404eab3a-6ddc-4ba6-afe8-1c3fff464d44');
 
 After calling `fetch`, radiks will automatically decrypt all encrypted fields.
 
-##### Accessing model attributes
+#### Accessing model attributes
 
 All attributes (other than `id`) are stored in an `attrs` property on the model.
 
@@ -206,7 +203,7 @@ const { name, likesDogs } = person.attrs;
 console.log(`Does ${name} like dogs?`, likesDogs);
 ~~~
 
-##### Updating a model
+#### Updating a model
 
 To quickly update multiple attributes of a model, pass those attributes to the `update` function.
 
@@ -220,7 +217,7 @@ person.update(newAttributes)
 
 Note that calling `update` does **not** save the model.
 
-##### Saving a model
+#### Saving a model
 
 To save a model to Gaia and CouchDB, call the `save` function. First, it encrypts all attributes that do not have the `decrypted` option in their schema. Then, it saves a JSON representation of the model in Gaia, as well as in CouchDB. `save` returns a promise.
 
@@ -228,7 +225,7 @@ To save a model to Gaia and CouchDB, call the `save` function. First, it encrypt
 await person.save();
 ~~~
 
-#### Querying models
+### Querying models
 
 To fetch multiple records that match a certain query, use the class's `fetchList` function. This method creates an HTTP query to Radiks-server, which then queries the underlying database. Radiks-server uses the [`query-to-mongo`](https://github.com/pbatey/query-to-mongo) package to turn an HTTP query into a MongoDB query. Read the documentation for that package to learn how to do complex querying, sorting, limiting, etc.
 
@@ -261,7 +258,7 @@ const tasks = await Task.fetchList({
 })
 ~~~
 
-#### Managing relational data
+### Managing relational data
 
 It is common for applications to have multiple different models, where some reference another. For example, imagine a task-tracking application where a user has multiple projects, and each project has multiple tasks. Here's what those models might look like:
 
@@ -317,17 +314,17 @@ const project = await Project.findById('some-id-here');
 console.log(project.tasks); // will already have fetch and decrypted all related tasks
 ~~~
 
-### Collaboration
+## Collaboration
 
 A key feature of Radiks is support for private collaboration between multiple users. Supporting collaboration with client-side encryption and user-owned storage can be complicated, but the patterns to implement it are generally the same for different apps. Radiks provides out-of-the box for collaboration, making it easy to build private, collaborative apps.
 
 Radiks is built in a way that provides maximum privacy and security for collaborative groups. Radiks-server and external users have no knowledge about who is in a group.
 
-#### UserGroup Model
+### UserGroup Model
 
 The key model behind a collaborative group is `UserGroup`. By default, it only has one attribute, `name`, which is encrypted. You can create multiple subclasses of `UserGroup` later on with different attributes, if you need to.
 
-#### General Workflow
+### General Workflow
 
 The general workflow for creating a collaborative group that can share and edit encrypted models is as follows:
 
@@ -341,7 +338,7 @@ The general workflow for creating a collaborative group that can share and edit 
 4. The admin of the group can later remove a user from a group. They do this by creating a new private key for signing and encryption, and updating the `GroupMembership` of all users _except_ the user they just removed.
 5. After a key is rotated, all new and updated models must use the new key for signing. Radiks-server validates all group-related models to ensure that they're signed with the most up-to-date key.
 
-##### Creating a UserGroup
+#### Creating a UserGroup
 
 ~~~javascript
 import { UserGroup } from 'radiks';
@@ -354,7 +351,7 @@ await group.create();
 
 Calling `create` on a new `UserGroup` will create the group and activate an invitation for the creator of the group.
 
-##### Inviting a User
+#### Inviting a User
 
 Use the `makeGroupInvitation` method on a `UserGroup` instance to invite a user. The only argument passed to this method is the username of the user you want to invite.
 
@@ -367,7 +364,7 @@ const invitation = await group.makeGroupInvitation(usernameToInvite);
 console.log(invitation._id); // the ID used to later activate an invitation
 ~~~
 
-##### Accepting an invitation
+#### Accepting an invitation
 
 Use the `activate` method on a `GroupInvitation` instance to activate an invitation:
 
@@ -378,7 +375,7 @@ const invitation = await GroupInvitation.findById(myInvitationID);
 await invitation.activate();
 ~~~
 
-##### Viewing all activated UserGroups for the current user
+#### Viewing all activated UserGroups for the current user
 
 Call `UserGroup.myGroups` to fetch all groups that the current user is a member of:
 
@@ -390,8 +387,22 @@ const groups = await UserGroup.myGroups();
 
 ## Development
 
-To compile with babel, make sure you've installed `@babel/core` globally. Then, run
+To compile with babel, run:
 
 ~~~bash
 yarn compile
+# or, to auto-compile when files change
+yarn compile-watch
+~~~
+
+To run tests:
+
+~~~bash
+yarn test
+~~~
+
+To run `eslint`:
+
+~~~bash
+yarn eslint
 ~~~
