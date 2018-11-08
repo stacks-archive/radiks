@@ -105,9 +105,10 @@ export default class Model {
   }
 
   update(attrs) {
+    const updater = typeof attrs === 'function' ? attrs(this.attrs) : attrs;
     this.attrs = {
       ...this.attrs,
-      ...attrs,
+      ...updater,
     };
   }
 
