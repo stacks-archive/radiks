@@ -16,7 +16,7 @@ export default class Model {
 
   static defaults = {}
 
-  static async fetchList(_selector, { decrypt = true } = {}) {
+  static async fetchList(_selector = {}, { decrypt = true } = {}) {
     const selector = {
       ..._selector,
       radiksType: this.modelName(),
@@ -32,6 +32,22 @@ export default class Model {
     });
     const models = await Promise.all(modelDecryptions);
     return models;
+  }
+
+  /**
+   * Fetch all models that are owned by the current user.
+   * This only includes 'personally' owned models, and not those created
+   * as part of a UserGroup
+   *
+   * @param {Object} _selector - A query to include when fetching models
+   */
+  static fetchOwnList(_selector = {}) {
+    const { _id } = userGroupKeys().personal;
+    const selector = {
+      ..._selector,
+      signingKeyId: _id,
+    };
+    return this.fetchList(selector);
   }
 
   static findById(_id, fetchOptions) {
