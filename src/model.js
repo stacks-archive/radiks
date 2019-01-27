@@ -34,6 +34,15 @@ export default class Model {
     return models;
   }
 
+  static async findOne(selector = {}, options = { decrypt: true }) {
+    const opts = {
+      ...options,
+      limit: 1,
+    };
+    const results = await this.fetchList(selector, opts);
+    return results[0];
+  }
+
   /**
    * Fetch all models that are owned by the current user.
    * This only includes 'personally' owned models, and not those created
@@ -71,6 +80,9 @@ export default class Model {
   async save() {
     return new Promise(async (resolve, reject) => {
       try {
+        if (this.beforeSave) {
+          await this.beforeSave();
+        }
         const now = new Date().getTime();
         this.attrs.createdAt = this.attrs.createdAt || now;
         this.attrs.updatedAt = now;
