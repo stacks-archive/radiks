@@ -88,6 +88,8 @@ export default class UserGroup extends Model {
     return gaiaConfig;
   }
 
+  static modelName = () => 'UserGroup'
+
   getSigningKey() {
     const { userGroups, signingKeys } = userGroupKeys();
     const id = userGroups[this._id];
