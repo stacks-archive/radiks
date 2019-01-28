@@ -2,38 +2,7 @@
 
 A client-side framework for building model-driven decentralized applications on top of [Blockstack](https://blockstack.org) storage and authentication.
 
-<!-- TOC depthFrom:2 -->
-
-- [Why?](#why)
-- [How?](#how)
-  - [How authorization works](#how-authorization-works)
-- [So, is it decentralized?](#so-is-it-decentralized)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Authentication](#authentication)
-- [Models](#models)
-  - [Defining a model](#defining-a-model)
-    - [Schema](#schema)
-    - [Defaults](#defaults)
-    - [Example](#example)
-  - [Using models](#using-models)
-    - [Constructing a model](#constructing-a-model)
-    - [Fetching a model](#fetching-a-model)
-    - [Accessing model attributes](#accessing-model-attributes)
-    - [Updating a model](#updating-a-model)
-    - [Saving a model](#saving-a-model)
-  - [Querying models](#querying-models)
-  - [Managing relational data](#managing-relational-data)
-- [Collaboration](#collaboration)
-  - [UserGroup Model](#usergroup-model)
-  - [General Workflow](#general-workflow)
-    - [Creating a UserGroup](#creating-a-usergroup)
-    - [Inviting a User](#inviting-a-user)
-    - [Accepting an invitation](#accepting-an-invitation)
-    - [Viewing all activated UserGroups for the current user](#viewing-all-activated-usergroups-for-the-current-user)
-- [Development](#development)
-
-<!-- /TOC -->
+<!-- TOC depthFrom:2 -->autoauto- [Why?](#why)auto- [How?](#how)auto  - [How authorization works](#how-authorization-works)auto- [So, is it decentralized?](#so-is-it-decentralized)auto- [Installation](#installation)auto- [Configuration](#configuration)auto- [Authentication](#authentication)auto- [Models](#models)auto  - [Defining a model](#defining-a-model)auto    - [Schema](#schema)auto    - [Defaults](#defaults)auto    - [Example](#example)auto  - [Using models](#using-models)auto    - [Constructing a model](#constructing-a-model)auto    - [Fetching a model](#fetching-a-model)auto    - [Accessing model attributes](#accessing-model-attributes)auto    - [Updating a model](#updating-a-model)auto    - [Saving a model](#saving-a-model)auto  - [Querying models](#querying-models)auto  - [Managing relational data](#managing-relational-data)auto- [Collaboration](#collaboration)auto  - [UserGroup Model](#usergroup-model)auto  - [General Workflow](#general-workflow)auto    - [Creating a UserGroup](#creating-a-usergroup)auto    - [Inviting a User](#inviting-a-user)auto    - [Accepting an invitation](#accepting-an-invitation)auto    - [Viewing all activated UserGroups for the current user](#viewing-all-activated-usergroups-for-the-current-user)auto- [Development](#development)autoauto<!-- /TOC -->
 
 ## Why?
 
@@ -73,7 +42,7 @@ Although radiks applications rely on a centrally-hosted database, it is still fu
 
 ## Installation
 
-To get started, first setup CouchDB and a radiks server. Check out the `radiks-server` documentation for more information.
+To get started, first setup MongoDB and a radiks server. Check out the [`radiks-server`](https://github.com/hstove/radiks-server) documentation for more information.
 
 In your client-side code, install the `radiks` package:
 
@@ -219,7 +188,7 @@ Note that calling `update` does **not** save the model.
 
 #### Saving a model
 
-To save a model to Gaia and CouchDB, call the `save` function. First, it encrypts all attributes that do not have the `decrypted` option in their schema. Then, it saves a JSON representation of the model in Gaia, as well as in CouchDB. `save` returns a promise.
+To save a model to Gaia and MongoDB, call the `save` function. First, it encrypts all attributes that do not have the `decrypted` option in their schema. Then, it saves a JSON representation of the model in Gaia, as well as in MongoDB. `save` returns a promise.
 
 ~~~javascript
 await person.save();
