@@ -183,7 +183,7 @@ export default class Model {
   }
 
   static modelName() {
-    return this.name;
+    return this.className || this.name;
   }
 
   modelName() {
