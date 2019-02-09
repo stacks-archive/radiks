@@ -130,6 +130,8 @@ Creating models for your application's data is where radiks truly becomes helpfu
 
 To create a model class, first import the `Model` class from radiks. Then, create a class that extends this model, and provide a schema.
 
+**Important**: Make sure you add a static `className` property to your class. This is used when storing and querying information. If you don't add this, radiks will default to the actual model's class name. However, in production, your code will likely be minified, and the actual class name will be different. For this reason, it's highly recommended that you define the `className` manually.
+
 #### Schema
 
 The first static property you'll need to define is a schema. Create a static `schema` property on your class to define it. Each `key` in this object is the name of the field. The value is whatever type you want the field to be, or you can pass some options.
@@ -150,6 +152,8 @@ Include an optional `defaults` static property to define default values for a fi
 import { Model } from 'radiks';
 
 class Person extends Model {
+  static className = 'Person';
+
   static schema = {
     name: String,
     age: Number,
@@ -239,6 +243,8 @@ Or, imagine a `Task` model with a `name`, a boolean for `completed`, and an `ord
 
 ~~~javascript
 class Task extends Model {
+  static className = 'Task';
+
   static schema = {
     name: String,
     completed: {
@@ -264,10 +270,12 @@ It is common for applications to have multiple different models, where some refe
 
 ~~~javascript
 class Project extends Model {
+  static className = 'Project';
   static schema = { name: String }
 }
 
 class Task extends Model {
+  static className = 'Task';
   static schema = {
     name: String,
     projectId: {
@@ -301,6 +309,7 @@ Radiks lets you define an `afterFetch` method, which you can use to automaticall
 
 ~~~javascript
 class Project extends Model {
+  static className = 'Project';
   static schema = { name: String }
 
   async afterFetch() {
