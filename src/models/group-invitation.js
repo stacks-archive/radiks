@@ -5,6 +5,8 @@ import User from './user';
 import GroupMembership from './group-membership';
 
 export default class GroupInvitation extends Model {
+  static className = 'GroupInvitation';
+
   static schema = {
     userGroupId: String,
     signingKeyPrivateKey: String,

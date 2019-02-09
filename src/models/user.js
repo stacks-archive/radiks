@@ -9,6 +9,8 @@ import { addPersonalSigningKey } from '../helpers';
 const decrypted = true;
 
 export default class BlockstackUser extends Model {
+  static className = 'BlockstackUser';
+
   static schema = {
     username: {
       type: String,

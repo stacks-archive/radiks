@@ -4,6 +4,8 @@ import { loadUserData } from 'blockstack/lib/auth/authApp';
 import Model from '../model';
 
 export default class SigningKey extends Model {
+  static className = 'SigningKey';
+
   static schema = {
     publicKey: {
       type: String,

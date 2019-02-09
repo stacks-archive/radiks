@@ -7,6 +7,8 @@ import { clearStorage, userGroupKeys, GROUP_MEMBERSHIPS_STORAGE_KEY } from '../h
 import SigningKey from './signing-key';
 
 export default class GroupMembership extends Model {
+  static className = 'GroupMembership';
+
   static schema = {
     userGroupId: String,
     username: {
