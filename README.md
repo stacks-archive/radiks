@@ -31,6 +31,8 @@ A client-side framework for building model-driven decentralized applications on 
     - [Inviting a User](#inviting-a-user)
     - [Accepting an invitation](#accepting-an-invitation)
     - [Viewing all activated UserGroups for the current user](#viewing-all-activated-usergroups-for-the-current-user)
+    - [Finding a UserGroup](#finding-a-usergroup)
+- [Streaming real-time changes](#streaming-real-time-changes)
 - [Development](#development)
 
 <!-- /TOC -->
@@ -392,6 +394,35 @@ Call `UserGroup.myGroups` to fetch all groups that the current user is a member 
 import { UserGroup } from 'radiks';
 
 const groups = await UserGroup.myGroups();
+~~~
+
+#### Finding a UserGroup
+
+Use the method `UserGroup.find(id)` when fetching a specific UserGroup. This method has extra boilerplate to handle decrypting the model, because the private keys may need to be fetched from different models.
+
+~~~javascript
+const group = await UserGroup.find('my-id-here');
+~~~
+
+## Streaming real-time changes
+
+`Radiks-server` provides a websocket endpoint that will stream all new inserts and updates that it sees on the server. `Radiks` provides a helpful interface to poll for these changes on a model-by-model basis. For example, if you had a `Task` model, you could get real-time updates on all your tasks. This is especially useful in collaborative environments. As soon as a collaborator updates a model, you can get the change in real-time, and update your views accordingly.
+
+Here's an example for how to use the API:
+
+~~~javascript
+import Task from './models/task';
+
+Task.addStreamListener((task) => {
+  // this callback will be called whenever a task is created or updated.
+  // `task` is an instance of `Task`, and all methods are defined on it.
+  // If the user has the necessary keys to decrypt encrypted fields on the model,
+  // the model will be decrypted before the callback is invoked.
+
+  if (task.projectId === myAppsCurrentProjectPageId) {
+    // update your view here with this task
+  }
+})
 ~~~
 
 ## Development
