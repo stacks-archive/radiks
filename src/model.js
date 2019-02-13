@@ -30,7 +30,7 @@ export default class Model {
     const modelDecryptions = results.map((doc) => {
       const model = new Clazz(doc);
       if (decrypt) {
-        model.decrypt();
+        return model.decrypt();
       }
       return model;
     });
