@@ -22,12 +22,13 @@ export default class UserGroup extends Model {
   }
 
   static async find(id) {
-    const keys = GroupMembership.userGroupKeys();
-    if (!keys || !keys[id]) {
+    const { userGroups, signingKeys } = GroupMembership.userGroupKeys();
+    if (!userGroups || !userGroups[id]) {
       throw new Error(`UserGroup not found with id: '${id}'. Have you called \`GroupMembership.cacheKeys()\`?`);
     }
-    const privateKey = keys[id];
-    const userGroup = new this({ id });
+    const signingKey = userGroups[id];
+    const privateKey = signingKeys[signingKey];
+    const userGroup = new this({ _id: id });
     userGroup.privateKey = privateKey;
     await userGroup.fetch();
     return userGroup;
@@ -46,6 +47,16 @@ export default class UserGroup extends Model {
   }
 
   async makeGroupMembership(username) {
+    let existingInviteId = null;
+    this.attrs.members.forEach((member) => {
+      if (member.username === username) {
+        existingInviteId = member.inviteId;
+      }
+    });
+    if (existingInviteId) {
+      const invitation = await GroupInvitation.findById(existingInviteId, { decrypt: false });
+      return invitation;
+    }
     const invitation = await GroupInvitation.makeInvitation(username, this);
     this.attrs.members.push({
       username,
@@ -70,6 +81,9 @@ export default class UserGroup extends Model {
   }
 
   encryptionPrivateKey() {
+    if (this.privateKey) {
+      return this.privateKey;
+    }
     const { signingKeys } = userGroupKeys();
     return signingKeys[this.attrs.signingKeyId];
   }

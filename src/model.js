@@ -169,9 +169,11 @@ export default class Model {
     return userGroupKeys().personal;
   }
 
-  encryptionPublicKey = () => getPublicKeyFromPrivate(this.encryptionPrivateKey())
+  encryptionPublicKey() {
+    return getPublicKeyFromPrivate(this.encryptionPrivateKey());
+  }
 
-  encryptionPrivateKey = () => {
+  encryptionPrivateKey() {
     let privateKey;
     if (this.attrs.userGroupId) {
       const { userGroups, signingKeys } = userGroupKeys();

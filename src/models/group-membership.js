@@ -62,7 +62,17 @@ export default class GroupMembership extends Model {
     return publicKey;
   }
 
-  encryptionPrivateKey = () => loadUserData().appPrivateKey
+  encryptionPrivateKey() {
+    return loadUserData().appPrivateKey;
+  }
+
+  getSigningKey() {
+    const { signingKeyId, signingKeyPrivateKey } = this.attrs;
+    return {
+      _id: signingKeyId,
+      privateKey: signingKeyPrivateKey,
+    };
+  }
 
   async fetchUserGroupSigningKey() {
     const _id = this.attrs.userGroupId;

@@ -3,6 +3,7 @@ import { loadUserData } from 'blockstack/lib/auth/authApp';
 import Model from '../model';
 import User from './user';
 import GroupMembership from './group-membership';
+import { userGroupKeys } from '../helpers';
 
 export default class GroupInvitation extends Model {
   static className = 'GroupInvitation';
@@ -18,8 +19,8 @@ export default class GroupInvitation extends Model {
   }
 
   static async makeInvitation(username, userGroup) {
-    const user = new User({ id: username });
-    await user.fetch();
+    const user = new User({ _id: username });
+    await user.fetch({ decrypt: false });
     const { publicKey } = user.attrs;
     const invitation = new this({
       userGroupId: userGroup._id,
@@ -32,6 +33,10 @@ export default class GroupInvitation extends Model {
   }
 
   async activate() {
+    const { userGroups } = userGroupKeys();
+    if (userGroups[this.attrs.userGroupId]) {
+      return true;
+    }
     const groupMembership = new GroupMembership({
       userGroupId: this.attrs.userGroupId,
       username: loadUserData().username,
@@ -47,5 +52,7 @@ export default class GroupInvitation extends Model {
     return this.userPublicKey;
   }
 
-  encryptionPrivateKey = () => loadUserData().appPrivateKey
+  encryptionPrivateKey() {
+    return loadUserData().appPrivateKey;
+  }
 }
