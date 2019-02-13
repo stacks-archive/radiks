@@ -2,9 +2,13 @@ import uuid from 'uuid/v4';
 import * as blockstack from 'blockstack';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import { signECDSA } from 'blockstack/lib/encryption';
+import EventEmitter from 'wolfy87-eventemitter';
 
 import { encryptObject, decryptObject, userGroupKeys } from './helpers';
 import { sendNewGaiaUrl, find } from './api';
+import Streamer from './streamer';
+
+const EVENT_NAME = 'MODEL_STREAM_EVENT';
 
 export default class Model {
   static apiServer = null;
@@ -190,5 +194,59 @@ export default class Model {
 
   modelName() {
     return this.constructor.modelName();
+  }
+
+  isOwnedByUser() {
+    const keys = userGroupKeys();
+    if (this.attrs.signingKeyId === keys.personal._id) {
+      return true;
+    } if (this.attrs.userGroupId) {
+      let isOwned = false;
+      Object.keys(keys.userGroups).forEach((groupId) => {
+        if (groupId === this.attrs.userGroupId) {
+          isOwned = true;
+        }
+      });
+      return isOwned;
+    }
+    return false;
+  }
+
+  static onStreamEvent = (_this, [event]) => {
+    try {
+      const { data } = event;
+      const attrs = JSON.parse(data);
+      if (attrs && attrs.radiksType === _this.modelName()) {
+        const model = new _this(attrs);
+        if (model.isOwnedByUser()) {
+          model.decrypt().then(() => {
+            _this.emitter.emit(EVENT_NAME, model);
+          });
+        } else {
+          _this.emitter.emit(EVENT_NAME, model);
+        }
+      }
+    } catch (error) {
+      // console.error(error.message);
+    }
+  }
+
+  static addStreamListener(callback) {
+    if (!this.emitter) {
+      this.emitter = new EventEmitter();
+    }
+    if (this.emitter.getListeners().length === 0) {
+      Streamer.addListener((args) => {
+        this.onStreamEvent(this, args);
+      });
+    }
+    this.emitter.addListener(EVENT_NAME, callback);
+  }
+
+  static removeStreamListener(callback) {
+    this.emitter.removeListener(EVENT_NAME, callback);
+    if (this.emitter.getListeners().length === 0) {
+      Streamer.removeListener(this.onStreamEvent);
+    }
   }
 }
