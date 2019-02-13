@@ -36,7 +36,7 @@ export const decryptObject = async (encrypted, model) => {
         const decryptedValue = decryptECIES(privateKey, value);
         decrypted[key] = stringToValue(decryptedValue, clazz.type || clazz);
       } catch (error) {
-        // console.error(`Decryption error for key: '${key}': ${error.message}`);
+        console.debug(`Decryption error for key: '${key}': ${error.message}`);
         decrypted[key] = value;
       }
     }
