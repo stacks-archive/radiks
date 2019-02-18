@@ -41,7 +41,7 @@ export default class GroupMembership extends Model {
     const { userGroups, signingKeys } = await this.fetchUserGroups();
     const groupKeys = userGroupKeys();
     const self = await User.findById(loadUserData().username);
-    const key = await SigningKey.findById(self.attrs.signingKeyId);
+    const key = await SigningKey.findById(self.attrs.personalSigningKeyId);
     groupKeys.personal = key.attrs;
     groupKeys.signingKeys = signingKeys;
     groupKeys.userGroups = userGroups;
