@@ -10,7 +10,8 @@ export default class Streamer {
       return this.socket;
     }
     const { apiServer } = getConfig();
-    const socket = new WebSocket(`ws://${apiServer.replace(/^https?:\/\//, '')}/radiks/stream/`);
+    const protocol = document.location.protocol === 'http:' ? 'ws' : 'wss';
+    const socket = new WebSocket(`${protocol}://${apiServer.replace(/^https?:\/\//, '')}/radiks/stream/`);
     this.emitter = new EventEmitter();
     this.socket = socket;
     this.initialized = true;
