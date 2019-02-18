@@ -31,7 +31,7 @@
     "mongodb": "^3.1.8"
   },
   "dependencies": {
-    "blockstack": "^18.0.4",
+    "blockstack": "19.0.0-alpha.3",
     "faker": "^4.1.0",
     "lodash": "^4.17.11",
     "qs": "^6.5.2",

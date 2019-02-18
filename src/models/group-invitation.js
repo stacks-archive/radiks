@@ -1,9 +1,7 @@
-import { loadUserData } from 'blockstack/lib/auth/authApp';
-
 import Model from '../model';
 import User from './user';
 import GroupMembership from './group-membership';
-import { userGroupKeys } from '../helpers';
+import { userGroupKeys, loadUserData } from '../helpers';
 
 export default class GroupInvitation extends Model {
   static className = 'GroupInvitation';

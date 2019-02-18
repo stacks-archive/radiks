@@ -1,12 +1,12 @@
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
-import { loadUserData } from 'blockstack/lib/auth/authApp';
-import { connectToGaiaHub } from 'blockstack/lib/storage/hub';
 
 import Model from '../model';
 import GroupMembership from './group-membership';
 import GroupInvitation from './group-invitation';
 import SigningKey from './signing-key';
-import { userGroupKeys, addUserGroupKey } from '../helpers';
+import {
+  userGroupKeys, addUserGroupKey, loadUserData, requireUserSession,
+} from '../helpers';
 
 export default class UserGroup extends Model {
   static schema = {
@@ -97,7 +97,8 @@ export default class UserGroup extends Model {
         domain: `UserGroups/${this._id}/`,
       },
     ];
-    const gaiaConfig = await connectToGaiaHub(hubUrl, appPrivateKey, scopes);
+    const userSession = requireUserSession();
+    const gaiaConfig = await userSession.connectToGaiaHub(hubUrl, appPrivateKey, scopes);
     this.attrs.gaiaConfig = gaiaConfig;
     return gaiaConfig;
   }

@@ -1,9 +1,9 @@
-import { loadUserData } from 'blockstack/lib/auth/authApp';
-
 import Model from '../model';
 import User from './user';
 import UserGroup from './user-group';
-import { clearStorage, userGroupKeys, GROUP_MEMBERSHIPS_STORAGE_KEY } from '../helpers';
+import {
+  clearStorage, userGroupKeys, GROUP_MEMBERSHIPS_STORAGE_KEY, loadUserData,
+} from '../helpers';
 import SigningKey from './signing-key';
 
 export default class GroupMembership extends Model {

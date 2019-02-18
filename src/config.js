@@ -1,5 +1,6 @@
 let config = {
   apiServer: '',
+  userSession: null,
 };
 
 export const configure = (newConfig) => {

@@ -1,4 +1,5 @@
 import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption';
+import { getConfig } from './config';
 
 export const GROUP_MEMBERSHIPS_STORAGE_KEY = 'GROUP_MEMBERSHIPS_STORAGE_KEY';
 
@@ -91,4 +92,21 @@ export const addUserGroupKey = (userGroup) => {
   keys.userGroups[userGroup._id] = userGroup.attrs.signingKeyId;
   keys.signingKeys[userGroup.attrs.signingKeyId] = userGroup.privateKey;
   localStorage.setItem(GROUP_MEMBERSHIPS_STORAGE_KEY, JSON.stringify(keys));
+};
+
+export const requireUserSession = () => {
+  const { userSession } = getConfig();
+  if (!userSession) {
+    // TODO: link to docs
+    throw new Error('You have not properly configured your UserSession.');
+  }
+  return userSession;
+};
+
+export const loadUserData = () => {
+  const { userSession } = getConfig();
+  if (userSession) {
+    return userSession.loadUserData();
+  }
+  return null;
 };

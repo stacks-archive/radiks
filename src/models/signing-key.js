@@ -1,7 +1,7 @@
 import { makeECPrivateKey, getPublicKeyFromPrivate } from 'blockstack/lib/keys';
-import { loadUserData } from 'blockstack/lib/auth/authApp';
 
 import Model from '../model';
+import { loadUserData } from '../helpers';
 
 export default class SigningKey extends Model {
   static className = 'SigningKey';

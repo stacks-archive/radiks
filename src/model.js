@@ -1,10 +1,11 @@
 import uuid from 'uuid/v4';
-import * as blockstack from 'blockstack';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import { signECDSA } from 'blockstack/lib/encryption';
 import EventEmitter from 'wolfy87-eventemitter';
 
-import { encryptObject, decryptObject, userGroupKeys } from './helpers';
+import {
+  encryptObject, decryptObject, userGroupKeys, requireUserSession,
+} from './helpers';
 import { sendNewGaiaUrl, find } from './api';
 import Streamer from './streamer';
 
@@ -106,7 +107,7 @@ export default class Model {
   }
 
   saveFile(encrypted) {
-    return blockstack.putFile(this.blockstackPath(), JSON.stringify(encrypted), { encrypt: false });
+    return requireUserSession().putFile(this.blockstackPath(), JSON.stringify(encrypted), { encrypt: false });
   }
 
   blockstackPath() {
@@ -148,6 +149,7 @@ export default class Model {
       return true;
     }
     const signingKey = this.getSigningKey();
+    console.log(signingKey);
     this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
     const { privateKey } = signingKey;
     const contentToSign = [this._id];
@@ -183,7 +185,7 @@ export default class Model {
       const { userGroups, signingKeys } = userGroupKeys();
       privateKey = signingKeys[userGroups[this.attrs.userGroupId]];
     } else {
-      privateKey = blockstack.loadUserData().appPrivateKey;
+      privateKey = requireUserSession().loadUserData().appPrivateKey;
     }
     return privateKey;
   }

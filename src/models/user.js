@@ -1,10 +1,9 @@
-import { loadUserData } from 'blockstack/lib/auth/authApp';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 
 import Model from '../model';
 import SigningKey from './signing-key';
 import GroupMembership from './group-membership';
-import { addPersonalSigningKey } from '../helpers';
+import { addPersonalSigningKey, loadUserData } from '../helpers';
 
 const decrypted = true;
 
