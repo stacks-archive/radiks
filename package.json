@@ -1,6 +1,6 @@
 {
   "name": "radiks",
-  "version": "0.1.6",
+  "version": "0.2.0-alpha.1",
   "description": "Manage models with encryption and decentralized storage",
   "main": "lib/index.js",
   "author": "Hank Stoever",
