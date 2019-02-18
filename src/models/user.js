@@ -70,6 +70,14 @@ export default class BlockstackUser extends Model {
           // console.error('caught error', e);
         }).finally(() => {
           // console.log(user.attrs);
+          const userData = loadUserData();
+          const { username, profile, appPrivateKey } = userData;
+          const publicKey = getPublicKeyFromPrivate(appPrivateKey);
+          user.update({
+            username,
+            profile,
+            publicKey,
+          });
           if (!user.attrs.personalSigningKeyId) {
             user.createSigningKey().then((key) => {
               addPersonalSigningKey(key);
