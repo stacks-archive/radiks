@@ -1,5 +1,6 @@
 import { loadUserData } from 'blockstack/lib/auth/authApp';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
+import { signECDSA } from 'blockstack/lib/encryption';
 
 import Model from '../model';
 import SigningKey from './signing-key';
@@ -24,7 +25,7 @@ export default class BlockstackUser extends Model {
       type: String,
       decrypted,
     },
-    signingKeyId: String,
+    personalSigningKeyId: String,
   }
 
   static currentUser() {
@@ -52,7 +53,7 @@ export default class BlockstackUser extends Model {
 
   async createSigningKey() {
     const key = await SigningKey.create();
-    this.attrs.signingKeyId = key._id;
+    this.attrs.personalSigningKeyId = key._id;
     return key;
   }
 
@@ -69,13 +70,13 @@ export default class BlockstackUser extends Model {
           // console.error('caught error', e);
         }).finally(() => {
           // console.log(user.attrs);
-          if (!user.attrs.signingKeyId) {
+          if (!user.attrs.personalSigningKeyId) {
             user.createSigningKey().then((key) => {
               addPersonalSigningKey(key);
               resolveUser(user, resolve);
             });
           } else {
-            SigningKey.findById(user.attrs.signingKeyId).then((key) => {
+            SigningKey.findById(user.attrs.personalSigningKeyId).then((key) => {
               addPersonalSigningKey(key);
               resolveUser(user, resolve);
             });
@@ -85,5 +86,17 @@ export default class BlockstackUser extends Model {
         reject(error);
       }
     });
+  }
+
+  sign() {
+    this.attrs.signingKeyId = 'personal';
+    const { appPrivateKey } = loadUserData();
+    const contentToSign = [this._id];
+    if (this.attrs.updatedAt) {
+      contentToSign.push(this.attrs.updatedAt);
+    }
+    const { signature } = signECDSA(appPrivateKey, contentToSign.join('-'));
+    this.attrs.radiksSignature = signature;
+    return this;
   }
 }
