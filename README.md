@@ -89,13 +89,21 @@ npm install --save radiks
 
 To set up radiks.js, you only need to configure the URL that your Radiks-server instance is running on. If you're using the pre-built Radiks server, this will be `http://localhost:1260`. If you're in production or are using a custom Radiks server, you'll need to specify exactly which URL it's available at.
 
+Radiks also is compatible with version 19 of blockstack.js, which requires you to configure a `UserSession` object to handle all user-data-related methods. You'll need to define this and pass it to your Radiks configuration, so that Radiks can know how to fetch information about the current logged in user.
+
 To configure radiks, use code that looks like this when starting up your application:
 
 ~~~javascript
+import { UserSession, AppConfig } from 'blockstack';
 import { configure } from 'radiks';
 
+const userSession = new UserSession({
+  appConfig: new AppConfig(['store_write', 'publish_data'])
+})
+
 configure({
-  apiServer: 'http://my-radiks-server.com'
+  apiServer: 'http://my-radiks-server.com',
+  userSession
 });
 ~~~
 
@@ -103,15 +111,15 @@ configure({
 
 Most of your code will be informed by following [Blockstack's authentication documentation](https://github.com/blockstack/blockstack.js/blob/master/src/auth/README.md).
 
-After your user logs in with Blockstack, you'll have some code to save the user's data in localStorage. It will probably look like this:
+After your user logs in with Blockstack, you'll have some code to save the user's data in localStorage. You'll want to use the same `UserSession` you configured with Radiks, which can be fetched from the `getConfig` method.
 
 ~~~javascript
-import * as Blockstack from 'blockstack';
-import { User } from 'radiks';
+import { User, getConfig } from 'radiks';
 
 const handleSignIn = () => {
-  if (blockstack.isSignInPending()) {
-    await blockstack.handlePendingSignIn();
+  const { userSession } = getConfig();
+  if (userSession.isSignInPending()) {
+    await userSession.handlePendingSignIn();
     await User.createWithCurrentUser();
   }
 }
