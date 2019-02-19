@@ -33,6 +33,7 @@ A client-side framework for building model-driven decentralized applications on 
     - [Viewing all activated UserGroups for the current user](#viewing-all-activated-usergroups-for-the-current-user)
     - [Finding a UserGroup](#finding-a-usergroup)
 - [Streaming real-time changes](#streaming-real-time-changes)
+- [Saving centralized user-related data](#saving-centralized-user-related-data)
 - [Development](#development)
 
 <!-- /TOC -->
@@ -431,6 +432,21 @@ Task.addStreamListener((task) => {
     // update your view here with this task
   }
 })
+~~~
+
+## Saving centralized user-related data
+
+Sometimes, you need to save some data on behalf of the user that only the server is able to see. A common use case for this is when you want to notify a user, and you need to store, for example, their email. This should be updatable only by the user, and only the server (or that user) should be able to see it. Radiks provides the `Central` API to handle this:
+
+~~~javascript
+import { Central } from 'radiks';
+
+const key = 'UserSettings';
+const value = { email: 'myemail@example.com' };
+await Central.save(key, value);
+
+const result = await Central.get(key);
+console.log(result); // { email: 'myemail@example.com' }
 ~~~
 
 ## Development
