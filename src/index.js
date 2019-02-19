@@ -4,6 +4,7 @@ import User from './models/user';
 import { configure, getConfig } from './config';
 import GroupMembership from './models/group-membership';
 import GroupInvitation from './models/group-invitation';
+import Central from './central';
 
 module.exports = {
   Model,
@@ -13,4 +14,5 @@ module.exports = {
   GroupMembership,
   User,
   GroupInvitation,
+  Central,
 };
