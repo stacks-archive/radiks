@@ -28,3 +28,27 @@ export const find = async (query) => {
   const data = await response.json();
   return data;
 };
+
+export const saveCentral = async (data) => {
+  const { apiServer } = getConfig();
+  const url = `${apiServer}/radiks/central`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: new Headers({
+      'Content-Type': 'application/json',
+    }),
+  });
+  const { success } = await response.json();
+  return success;
+};
+
+export const fetchCentral = async (key, username, signature) => {
+  const { apiServer } = getConfig();
+  const queryString = qs.stringify({ username, signature });
+  const url = `${apiServer}/radiks/central/${key}?${queryString}`;
+  const response = await fetch(url);
+  const value = await response.json();
+  return value;
+};
