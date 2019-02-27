@@ -66,6 +66,6 @@ test('it signs ID with the signing key private key', async () => {
   expect(verifyECDSA(message, key.attrs.publicKey, model.attrs.radiksSignature)).toEqual(true);
   model.attrs.updatedAt = new Date().getTime();
   message = `${model._id}-${model.attrs.updatedAt}`;
-  model.sign();
+  await model.sign();
   expect(verifyECDSA(message, key.attrs.publicKey, model.attrs.radiksSignature)).toEqual(true);
 });
