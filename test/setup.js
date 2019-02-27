@@ -12,22 +12,31 @@ import { configure } from '../src/config';
 
 dotenv.load();
 
+let mockSaveClient;
+let mockFindClient;
+
 jest.mock('../src/api', () => ({
   sendNewGaiaUrl: encrypted => new Promise(async (resolve) => {
     // console.log('sendNewGaiaUrl');
-    const { MongoClient } = require('mongodb');
-    const url = 'mongodb://localhost:27017/radiks-test-server';
-    const client = await MongoClient.connect(url, { useNewUrlParser: true });
-    const collection = client.db().collection('radiks-testing-models');
+    if (!mockSaveClient) {
+      // console.log('connecting - save');
+      const { MongoClient } = require('mongodb');
+      const url = 'mongodb://localhost:27017/radiks-test-server';
+      mockSaveClient = await MongoClient.connect(url, { useNewUrlParser: true });
+    }
+    const collection = mockSaveClient.db().collection('radiks-testing-models');
     // console.log(encrypted);
     await collection.insertOne(encrypted);
     resolve();
   }),
   find: query => new Promise(async (resolve, reject) => {
-    const { MongoClient } = require('mongodb');
-    const url = 'mongodb://localhost:27017/radiks-test-server';
-    const client = await MongoClient.connect(url, { useNewUrlParser: true });
-    const collection = client.db().collection('radiks-testing-models');
+    if (!mockFindClient) {
+      const { MongoClient } = require('mongodb');
+      // console.log('connecting - find');
+      const url = 'mongodb://localhost:27017/radiks-test-server';
+      mockFindClient = await MongoClient.connect(url, { useNewUrlParser: true });
+    }
+    const collection = mockFindClient.db().collection('radiks-testing-models');
     const results = await collection.find(query).toArray();
     resolve({ results });
   }),
@@ -46,11 +55,12 @@ Model.prototype.saveFile = jest.fn(encrypted => new Promise(async (resolve) => {
 // });
 
 let collection;
+let collectionClient;
 
 beforeAll(async () => {
   const url = 'mongodb://localhost:27017/radiks-test-server';
-  const client = await MongoClient.connect(url, { useNewUrlParser: true });
-  collection = client.db().collection('radiks-testing-models');
+  collectionClient = await MongoClient.connect(url, { useNewUrlParser: true });
+  collection = collectionClient.db().collection('radiks-testing-models');
 });
 
 beforeEach(async () => {
@@ -78,4 +88,17 @@ beforeEach(async () => {
   });
 
   global.localStorage.setItem('blockstack-session', blockstackConfig);
+});
+
+afterAll(async () => {
+  // console.log('closing');
+  try {
+    await Promise.all([
+      mockSaveClient.close(),
+      collectionClient.close(),
+      mockFindClient.close(),
+    ]);
+  } catch (error) {
+    // nothing
+  }
 });
