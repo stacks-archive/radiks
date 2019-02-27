@@ -1098,10 +1098,10 @@ bitcoinjs-lib@^4:
     varuint-bitcoin "^1.0.4"
     wif "^2.0.1"
 
-blockstack@19.0.0-alpha.3:
-  version "19.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/blockstack/-/blockstack-19.0.0-alpha.3.tgz#06a965445329e7724c689cf8c221243621c938f7"
-  integrity sha512-J7Ct3UxqS9CPV5Cin/lE0Rww4s8QN1C4933Au2JCo5hAQqIzkU7jZm70EycUWNoH7GjSGkozx3OvHIS/pVThig==
+blockstack@19.0.0-beta.1:
+  version "19.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/blockstack/-/blockstack-19.0.0-beta.1.tgz#b0eec0ef4f860e4391be273b6e6ac9b91ee4096a"
+  integrity sha512-OvKUOR4nSyd7eN2gxmcNvuvEBOoJhspQ6saFRyZ3bbGz1FepNcupYREaUC1i38xXgb6+KpDtMZLDfT/5wJYioQ==
   dependencies:
     ajv "^4.11.5"
     babel-runtime "^6.26.0"
@@ -1111,7 +1111,6 @@ blockstack@19.0.0-alpha.3:
     bitcoinjs-lib "^4"
     cheerio "^0.22.0"
     cross-fetch "^2.2.2"
-    custom-protocol-detection-blockstack "1.1.4"
     ecurve "^1.0.6"
     elliptic "^6.4.0"
     es6-promise "^4.2.4"
@@ -1568,11 +1567,6 @@ cssstyle@^1.0.0:
   resolved "https://registry.yarnpkg.com/cssstyle/-/cssstyle-1.1.1.tgz#18b038a9c44d65f7a8e428a653b9f6fe42faf5fb"
   dependencies:
     cssom "0.3.x"
-
-custom-protocol-detection-blockstack@1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/custom-protocol-detection-blockstack/-/custom-protocol-detection-blockstack-1.1.4.tgz#44ae959f3f6f5280cb663ab9502ca4cf15df1091"
-  integrity sha512-SkLAAGFaYzYqqxuDpPva33ZiH9hsMtd77MoFA1spfIcPHdGgNa7MW211eX04DVy914/emR+S6dc0RqkuXB372g==
 
 dashdash@^1.12.0:
   version "1.14.1"
