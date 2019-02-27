@@ -107,7 +107,10 @@ export default class Model {
   }
 
   saveFile(encrypted) {
-    return requireUserSession().putFile(this.blockstackPath(), JSON.stringify(encrypted), { encrypt: false });
+    const userSession = requireUserSession();
+    return userSession.putFile(this.blockstackPath(), JSON.stringify(encrypted), {
+      encrypt: false,
+    });
   }
 
   blockstackPath() {
@@ -249,9 +252,5 @@ export default class Model {
     if (this.emitter.getListeners().length === 0) {
       Streamer.removeListener(this.onStreamEvent);
     }
-  }
-
-  async delete() {
-
   }
 }
