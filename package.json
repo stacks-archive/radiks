@@ -42,7 +42,8 @@
   "scripts": {
     "compile": "babel src -d lib",
     "compile-watch": "babel src -d lib --watch",
-    "test": "jest --verbose=false --watch --ci --runInBand",
+    "test": "jest --verbose=false --ci --runInBand",
+    "test-watch": "jest --verbose=false --ci --runInBand --watch",
     "eslint": "eslint src"
   },
   "jest": {}
