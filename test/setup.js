@@ -2,12 +2,13 @@ import 'mock-local-storage';
 import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
 import faker from 'faker';
+import { UserSession, AppConfig } from 'blockstack';
 
 import './mocks/crypto';
 import { makeECPrivateKey } from 'blockstack/lib/keys';
 import Model from '../src/model';
 // import UserGroup from '../src/models/user-group';
-// import { configure } from '../src/config';
+import { configure } from '../src/config';
 
 dotenv.load();
 
@@ -53,6 +54,12 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  const userSession = new UserSession({
+    appConfig: new AppConfig(['store_write', 'publish_data']),
+  });
+  configure({
+    userSession,
+  });
   try {
     await collection.drop();
   } catch (error) {
@@ -60,12 +67,15 @@ beforeEach(async () => {
   }
   const appPrivateKey = makeECPrivateKey();
   const blockstackConfig = JSON.stringify({
-    appPrivateKey,
-    username: faker.name.findName(),
-    profile: {
-      // TODO
+    version: '1.0.0',
+    userData: {
+      appPrivateKey,
+      username: faker.name.findName(),
+      profile: {
+        // TODO
+      },
     },
   });
 
-  global.localStorage.setItem('blockstack', blockstackConfig);
+  global.localStorage.setItem('blockstack-session', blockstackConfig);
 });

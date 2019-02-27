@@ -149,7 +149,6 @@ export default class Model {
       return true;
     }
     const signingKey = this.getSigningKey();
-    console.log(signingKey);
     this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
     const { privateKey } = signingKey;
     const contentToSign = [this._id];
@@ -250,5 +249,9 @@ export default class Model {
     if (this.emitter.getListeners().length === 0) {
       Streamer.removeListener(this.onStreamEvent);
     }
+  }
+
+  async delete() {
+
   }
 }
