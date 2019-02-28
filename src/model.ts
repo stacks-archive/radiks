@@ -6,23 +6,48 @@ import EventEmitter from 'wolfy87-eventemitter';
 import {
   encryptObject, decryptObject, userGroupKeys, requireUserSession,
 } from './helpers';
-import { sendNewGaiaUrl, find } from './api';
+import { sendNewGaiaUrl, find, FindQuery } from './api';
 import Streamer from './streamer';
 
 const EVENT_NAME = 'MODEL_STREAM_EVENT';
 
-export default class Model {
-  static apiServer = null;
+interface FetchOptions {
+  decrypt?: boolean
+}
 
-  static fromSchema(schema) {
+interface Attrs {
+  createdAt?: number,
+  updatedAt?: number,
+  _id?: string
+  [key: string]: any,
+}
+
+interface SchemaAttribute {
+  type: String | Object | Array<any> | Number | Boolean;
+  decrypted?: boolean;
+}
+
+interface Schema {
+  [key: string]: String | Object | Array<any> | Number | Boolean | SchemaAttribute;
+}
+
+export default class Model {
+  public static schema: any;
+  public static defaults: any = {};
+  public static className?: string;
+  public static emitter?: EventEmitter;
+  schema: Schema;
+  _id: string;
+  attrs: Attrs;
+
+
+  static fromSchema(schema: Schema) {
     this.schema = schema;
     return this;
   }
 
-  static defaults = {}
-
-  static async fetchList(_selector = {}, { decrypt = true } = {}) {
-    const selector = {
+  static async fetchList(_selector: FindQuery = {}, { decrypt = true }: FetchOptions = {}) {
+    const selector: FindQuery = {
       ..._selector,
       radiksType: this.modelName(),
     };
@@ -39,12 +64,12 @@ export default class Model {
     return models;
   }
 
-  static async findOne(selector = {}, options = { decrypt: true }) {
-    const opts = {
-      ...options,
+  static async findOne(_selector:FindQuery = {}, options: FetchOptions = { decrypt: true }) {
+    const selector: FindQuery = {
+      ..._selector,
       limit: 1,
     };
-    const results = await this.fetchList(selector, opts);
+    const results = await this.fetchList(selector, options);
     return results[0];
   }
 
@@ -55,7 +80,7 @@ export default class Model {
    *
    * @param {Object} _selector - A query to include when fetching models
    */
-  static fetchOwnList(_selector = {}) {
+  static fetchOwnList(_selector: FindQuery = {}) {
     const { _id } = userGroupKeys().personal;
     const selector = {
       ..._selector,
@@ -64,14 +89,14 @@ export default class Model {
     return this.fetchList(selector);
   }
 
-  static findById(_id, fetchOptions) {
+  static findById(_id: string, fetchOptions: Object) {
     const Clazz = this;
     const model = new Clazz({ _id });
     return model.fetch(fetchOptions);
   }
 
-  constructor(attrs = {}) {
-    const { schema, defaults } = this.constructor;
+  constructor(attrs: any = {}) {
+    const { schema, defaults } = <typeof Model> this.constructor;
     const name = this.modelName();
     this.schema = schema;
     this._id = attrs._id || uuid().replace('-', '');
@@ -131,7 +156,7 @@ export default class Model {
     if (decrypt) {
       await this.decrypt();
     }
-    if (this.afterFetch) await this.afterFetch();
+    await this.afterFetch();
     return this;
   }
 
@@ -140,7 +165,7 @@ export default class Model {
     return this;
   }
 
-  update(attrs) {
+  update(attrs: Attrs) {
     this.attrs = {
       ...this.attrs,
       ...attrs,
@@ -154,7 +179,7 @@ export default class Model {
     const signingKey = this.getSigningKey();
     this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
     const { privateKey } = signingKey;
-    const contentToSign = [this._id];
+    const contentToSign: Array<any> = [this._id];
     if (this.attrs.updatedAt) {
       contentToSign.push(this.attrs.updatedAt);
     }
@@ -197,7 +222,8 @@ export default class Model {
   }
 
   modelName() {
-    return this.constructor.modelName();
+    const { modelName } = <typeof Model> this.constructor;
+    return modelName();
   }
 
   isOwnedByUser() {
@@ -240,7 +266,7 @@ export default class Model {
       this.emitter = new EventEmitter();
     }
     if (this.emitter.getListeners().length === 0) {
-      Streamer.addListener((args) => {
+      Streamer.addListener((args: any) => {
         this.onStreamEvent(this, args);
       });
     }
@@ -253,4 +279,10 @@ export default class Model {
       Streamer.removeListener(this.onStreamEvent);
     }
   }
+
+  // @abstract
+  beforeSave() { }
+
+  // @abstract
+  afterFetch() { }
 }

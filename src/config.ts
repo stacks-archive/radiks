@@ -4,6 +4,8 @@ interface UserSession {
     profile: Object,
     username: string
   },
+
+  putFile: (path: string, value: any, options: any) => string;
 }
 
 interface Config {

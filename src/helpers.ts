@@ -3,7 +3,7 @@ import { getConfig } from './config';
 
 export const GROUP_MEMBERSHIPS_STORAGE_KEY = 'GROUP_MEMBERSHIPS_STORAGE_KEY';
 
-const valueToString = (value, clazz) => {
+const valueToString = (value: any, clazz: any) => {
   if (clazz === Boolean) {
     return value ? 'true' : 'false';
   } if (clazz === Number) {
@@ -14,7 +14,7 @@ const valueToString = (value, clazz) => {
   return value;
 };
 
-const stringToValue = (value, clazz) => {
+const stringToValue = (value: string, clazz: any) => {
   if (clazz === Boolean) {
     return value === 'true';
   } if (clazz === Number) {
@@ -25,9 +25,12 @@ const stringToValue = (value, clazz) => {
   return value;
 };
 
-export const decryptObject = async (encrypted, model) => {
+// TODO: import Model type
+export const decryptObject = async (encrypted: any, model: any) => {
   const privateKey = await model.encryptionPrivateKey();
-  const decrypted = Object.assign({}, encrypted);
+  const decrypted = {
+    ...encrypted,
+  };
   const { schema } = model;
   Object.keys(encrypted).forEach((key) => {
     const value = encrypted[key];
@@ -45,11 +48,13 @@ export const decryptObject = async (encrypted, model) => {
   return decrypted;
 };
 
-export const encryptObject = async (model) => {
+export const encryptObject = async (model: any) => {
   const publicKey = await model.encryptionPublicKey();
   const object = model.attrs;
-  // console.log(object);
-  const encrypted = Object.assign({}, object, { _id: model._id });
+  const encrypted = {
+    ...object,
+    _id: model._id,
+  };
   Object.keys(model.schema).forEach((key) => {
     const clazz = model.schema[key];
     const { decrypted } = clazz;
@@ -67,8 +72,8 @@ export const clearStorage = () => {
 };
 
 export const userGroupKeys = () => {
-  let keys = localStorage.getItem(GROUP_MEMBERSHIPS_STORAGE_KEY);
-  keys = keys ? JSON.parse(keys) : {};
+  const keysString = localStorage.getItem(GROUP_MEMBERSHIPS_STORAGE_KEY);
+  let keys = keysString ? JSON.parse(keysString) : {};
   keys = {
     userGroups: {},
     signingKeys: {},

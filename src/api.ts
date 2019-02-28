@@ -20,9 +20,9 @@ export const sendNewGaiaUrl = async (gaiaURL : string) => {
   return success;
 };
 
-interface FindQuery {
-  limit: number,
-
+export interface FindQuery {
+  limit?: number,
+  [x: string]: any
 }
 
 export const find = async (query: FindQuery) => {
@@ -34,7 +34,14 @@ export const find = async (query: FindQuery) => {
   return data;
 };
 
-export const saveCentral = async (data) => {
+interface CentralSaveData {
+  signature: string,
+  username: string,
+  key: string,
+  value: any,
+}
+
+export const saveCentral = async (data: CentralSaveData) => {
   const { apiServer } = getConfig();
   const url = `${apiServer}/radiks/central`;
 
@@ -49,7 +56,7 @@ export const saveCentral = async (data) => {
   return success;
 };
 
-export const fetchCentral = async (key, username, signature) => {
+export const fetchCentral = async (key: string, username: string, signature: string) => {
   const { apiServer } = getConfig();
   const queryString = stringify({ username, signature });
   const url = `${apiServer}/radiks/central/${key}?${queryString}`;

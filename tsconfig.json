@@ -1,0 +1,6 @@
+{
+  "declaration": true,
+  "compilerOptions": {
+    "target": "esnext"
+  }
+}
