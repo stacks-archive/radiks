@@ -1,7 +1,7 @@
-import qs from 'qs';
+import { stringify } from 'qs';
 import { getConfig } from './config';
 
-export const sendNewGaiaUrl = async (gaiaURL) => {
+export const sendNewGaiaUrl = async (gaiaURL : string) => {
   const { apiServer } = getConfig();
   const url = `${apiServer}/radiks/models/crawl`;
   // console.log(url, gaiaURL);
@@ -13,16 +13,21 @@ export const sendNewGaiaUrl = async (gaiaURL) => {
       'Content-Type': 'application/json',
     }),
   });
-  const { success, doc, message } = await response.json();
+  const { boolean: success, string: message } = await response.json();
   if (!success) {
     throw new Error(`Error when saving model: '${message}'`);
   }
-  return doc;
+  return success;
 };
 
-export const find = async (query) => {
+interface FindQuery {
+  limit: number,
+
+}
+
+export const find = async (query: FindQuery) => {
   const { apiServer } = getConfig();
-  const queryString = qs.stringify(query, { arrayFormat: 'brackets', encode: false });
+  const queryString = stringify(query, { arrayFormat: 'brackets', encode: false });
   const url = `${apiServer}/radiks/models/find?${queryString}`;
   const response = await fetch(url);
   const data = await response.json();
@@ -46,7 +51,7 @@ export const saveCentral = async (data) => {
 
 export const fetchCentral = async (key, username, signature) => {
   const { apiServer } = getConfig();
-  const queryString = qs.stringify({ username, signature });
+  const queryString = stringify({ username, signature });
   const url = `${apiServer}/radiks/central/${key}?${queryString}`;
   const response = await fetch(url);
   const value = await response.json();

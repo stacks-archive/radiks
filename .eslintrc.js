@@ -11,6 +11,13 @@ module.exports = {
     "class-methods-use-this": [0]
   },
   plugins: [
-    'jest'
-  ]
+    'jest',
+    'import'
+  ],
+  settings: {
+    "import/resolver": {
+      // use <root>/tsconfig.json
+      "typescript": {},
+    }
+  }
 };
