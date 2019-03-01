@@ -8,27 +8,12 @@ import {
 } from './helpers';
 import { sendNewGaiaUrl, find, FindQuery } from './api';
 import Streamer from './streamer';
+import { Schema, Attrs } from './types/index';
 
 const EVENT_NAME = 'MODEL_STREAM_EVENT';
 
 interface FetchOptions {
   decrypt?: boolean
-}
-
-interface Attrs {
-  createdAt?: number,
-  updatedAt?: number,
-  _id?: string
-  [key: string]: any,
-}
-
-interface SchemaAttribute {
-  type: String | Object | Array<any> | Number | Boolean;
-  decrypted?: boolean;
-}
-
-interface Schema {
-  [key: string]: String | Object | Array<any> | Number | Boolean | SchemaAttribute;
 }
 
 export default class Model {
@@ -46,31 +31,45 @@ export default class Model {
     return this;
   }
 
-  static async fetchList(_selector: FindQuery = {}, { decrypt = true }: FetchOptions = {}) {
+  static async fetchList<T extends Model>(
+    _selector: FindQuery = {},
+    { decrypt = true }: FetchOptions = {},
+  ) {
+    // const model: Model = this;
+    console.log('sup');
     const selector: FindQuery = {
       ..._selector,
       radiksType: this.modelName(),
     };
     const { results } = await find(selector);
     const Clazz = this;
-    const modelDecryptions = results.map((doc) => {
+    const modelDecryptions: Array<Promise<T>> = results.map((doc: any) => {
       const model = new Clazz(doc);
       if (decrypt) {
         return model.decrypt();
       }
-      return model;
+      return Promise.resolve(model);
     });
-    const models = await Promise.all(modelDecryptions);
+    const models: Array<T> = await Promise.all(modelDecryptions);
     return models;
   }
 
-  static async findOne(_selector:FindQuery = {}, options: FetchOptions = { decrypt: true }) {
+  static async findOne<T extends Model>(
+    _selector:FindQuery = {},
+    options: FetchOptions = { decrypt: true },
+  ) {
     const selector: FindQuery = {
       ..._selector,
       limit: 1,
     };
     const results = await this.fetchList(selector, options);
     return results[0];
+  }
+
+  static findById<T extends Model>(_id: string, fetchOptions?: Object) {
+    const Clazz = this;
+    const model = new Clazz({ _id });
+    return model.fetch(fetchOptions);
   }
 
   /**
@@ -89,13 +88,7 @@ export default class Model {
     return this.fetchList(selector);
   }
 
-  static findById(_id: string, fetchOptions: Object) {
-    const Clazz = this;
-    const model = new Clazz({ _id });
-    return model.fetch(fetchOptions);
-  }
-
-  constructor(attrs: any = {}) {
+  constructor(attrs: Attrs = {}) {
     const { schema, defaults } = <typeof Model> this.constructor;
     const name = this.modelName();
     this.schema = schema;
@@ -179,7 +172,7 @@ export default class Model {
     const signingKey = this.getSigningKey();
     this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
     const { privateKey } = signingKey;
-    const contentToSign: Array<any> = [this._id];
+    const contentToSign: Array<String | Number> = [this._id];
     if (this.attrs.updatedAt) {
       contentToSign.push(this.attrs.updatedAt);
     }
@@ -202,12 +195,12 @@ export default class Model {
     return userGroupKeys().personal;
   }
 
-  encryptionPublicKey() {
+  async encryptionPublicKey() {
     return getPublicKeyFromPrivate(this.encryptionPrivateKey());
   }
 
   encryptionPrivateKey() {
-    let privateKey;
+    let privateKey: string;
     if (this.attrs.userGroupId) {
       const { userGroups, signingKeys } = userGroupKeys();
       privateKey = signingKeys[userGroups[this.attrs.userGroupId]];

@@ -5,9 +5,27 @@ import {
   clearStorage, userGroupKeys, GROUP_MEMBERSHIPS_STORAGE_KEY, loadUserData,
 } from '../helpers';
 import SigningKey from './signing-key';
+import { Attrs } from '../types/index';
+
+interface UserGroupKeys {
+  userGroups: {
+    [userGroupId: string]: string,
+  },
+  signingKeys: {
+    [signingKeyId: string]: string
+  }
+}
+
+interface GroupMembershipAttrs extends Attrs {
+  userGroupId: string | any,
+  username: string,
+  signingKeyPrivateKey: string | any,
+  signingKeyId: string | any,
+}
 
 export default class GroupMembership extends Model {
   static className = 'GroupMembership';
+  attrs: GroupMembershipAttrs;
 
   static schema = {
     userGroupId: String,
@@ -19,18 +37,18 @@ export default class GroupMembership extends Model {
     signingKeyId: String,
   }
 
-  static async fetchUserGroups() {
+  static async fetchUserGroups(): Promise<UserGroupKeys> {
     const { username } = loadUserData();
-    const memberships = await GroupMembership.fetchList({
+    const memberships : GroupMembership[] = await GroupMembership.fetchList({
       username,
     });
-    const signingKeys = {};
+    const signingKeys: UserGroupKeys['signingKeys'] = {};
     memberships.forEach(({ attrs }) => {
       signingKeys[attrs.signingKeyId] = attrs.signingKeyPrivateKey;
     });
     const fetchAll = memberships.map(membership => membership.fetchUserGroupSigningKey());
     const userGroupList = await Promise.all(fetchAll);
-    const userGroups = {};
+    const userGroups: UserGroupKeys['userGroups'] = {};
     userGroupList.forEach((userGroup) => {
       userGroups[userGroup._id] = userGroup.signingKeyId;
     });
@@ -67,7 +85,10 @@ export default class GroupMembership extends Model {
   }
 
   getSigningKey() {
-    const { signingKeyId, signingKeyPrivateKey } = this.attrs;
+    const { signingKeyId, signingKeyPrivateKey }: {
+      signingKeyId: string,
+      signingKeyPrivateKey: string
+    } = this.attrs;
     return {
       _id: signingKeyId,
       privateKey: signingKeyPrivateKey,
@@ -75,8 +96,8 @@ export default class GroupMembership extends Model {
   }
 
   async fetchUserGroupSigningKey() {
-    const _id = this.attrs.userGroupId;
-    const { signingKeyId } = (await UserGroup.findById(_id)).attrs;
+    const _id: string = this.attrs.userGroupId;
+    const { signingKeyId }: { signingKeyId: string } = (await UserGroup.findById(_id)).attrs;
     return {
       _id,
       signingKeyId,

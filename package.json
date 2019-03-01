@@ -47,11 +47,12 @@
     "wolfy87-eventemitter": "^5.2.5"
   },
   "scripts": {
-    "compile": "babel src -d lib",
-    "compile-watch": "babel src -d lib --watch",
+    "compile": "babel src -d lib --extensions '.ts,.js'",
+    "compile-watch": "babel src -d lib --watch --extensions '.ts,.js'",
     "test": "jest --verbose=false --ci --runInBand",
     "test-watch": "jest --verbose=false --ci --runInBand --watch",
-    "eslint": "eslint src --ext .ts,.js"
+    "eslint": "eslint src --ext .ts,.js",
+    "typescript": "tsc"
   },
   "jest": {}
 }

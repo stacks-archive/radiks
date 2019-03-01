@@ -2,9 +2,17 @@ import { makeECPrivateKey, getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 
 import Model from '../model';
 import { loadUserData } from '../helpers';
+import { Attrs } from '../types/index';
+
+interface SigningKeyAttrs extends Attrs {
+  publicKey?: string,
+  privateKey?: string | any,
+  userGroupId?: string,
+}
 
 export default class SigningKey extends Model {
   static className = 'SigningKey';
+  attrs: SigningKeyAttrs;
 
   static schema = {
     publicKey: {

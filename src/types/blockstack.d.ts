@@ -11,4 +11,5 @@ declare module 'blockstack/lib/encryption' {
 
 declare module 'blockstack/lib/keys' {
   export function getPublicKeyFromPrivate(privateKey: string): string
+  export function makeECPrivateKey(): string;
 }

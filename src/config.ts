@@ -1,12 +1,4 @@
-interface UserSession {
-  loadUserData: () => {
-    appPrivateKey: string,
-    profile: Object,
-    username: string
-  },
-
-  putFile: (path: string, value: any, options: any) => string;
-}
+import { UserSession } from './types/index';
 
 interface Config {
   apiServer: string,
