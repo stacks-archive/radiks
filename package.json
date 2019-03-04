@@ -54,5 +54,6 @@
     "eslint": "eslint src --ext .ts,.js",
     "typescript": "tsc"
   },
+  "types": "typed",
   "jest": {}
 }

@@ -14,7 +14,7 @@ export default class Model {
     attrs: Attrs;
     static fromSchema(schema: Schema): typeof Model;
     static fetchList<T extends Model>(_selector?: FindQuery, { decrypt }?: FetchOptions): Promise<T[]>;
-    static findOne<T extends Model>(_selector?: FindQuery, options?: FetchOptions): Promise<Model>;
+    static findOne<T extends Model>(_selector?: FindQuery, options?: FetchOptions): Promise<T>;
     static findById<T extends Model>(_id: string, fetchOptions?: Object): Promise<Model>;
     /**
      * Fetch all models that are owned by the current user.
@@ -27,7 +27,7 @@ export default class Model {
     constructor(attrs?: Attrs);
     save(): Promise<{}>;
     encrypted(): Promise<any>;
-    saveFile(encrypted: any): string;
+    saveFile(encrypted: Object): string;
     blockstackPath(): string;
     fetch({ decrypt }?: {
         decrypt?: boolean;
@@ -42,8 +42,8 @@ export default class Model {
     modelName(): string;
     isOwnedByUser(): boolean;
     static onStreamEvent: (_this: any, [event]: [any]) => void;
-    static addStreamListener(callback: any): void;
-    static removeStreamListener(callback: any): void;
+    static addStreamListener(callback: () => void): void;
+    static removeStreamListener(callback: () => void): void;
     beforeSave(): void;
     afterFetch(): void;
 }
