@@ -1,4 +1,4 @@
-import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption';
+import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption/ec';
 import { getConfig } from './config';
 
 export const GROUP_MEMBERSHIPS_STORAGE_KEY = 'GROUP_MEMBERSHIPS_STORAGE_KEY';
