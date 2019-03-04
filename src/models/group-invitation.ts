@@ -1,12 +1,21 @@
 import Model from '../model';
 import User from './user';
 import GroupMembership from './group-membership';
+import UserGroup from './user-group';
 import { userGroupKeys, loadUserData } from '../helpers';
+import { Schema, Attrs } from '../types/index';
+
+interface GroupInvitationAttrs extends Attrs {
+  userGroupId?: string | Object;
+  signingKeyPrivateKey?: string | Object;
+}
 
 export default class GroupInvitation extends Model {
   static className = 'GroupInvitation';
+  attrs: GroupInvitationAttrs;
+  userPublicKey: string;
 
-  static schema = {
+  static schema: Schema = {
     userGroupId: String,
     signingKeyPrivateKey: String,
     signingKeyId: String,
@@ -16,7 +25,7 @@ export default class GroupInvitation extends Model {
     updatable: false,
   }
 
-  static async makeInvitation(username, userGroup) {
+  static async makeInvitation(username: string, userGroup: UserGroup) {
     const user = new User({ _id: username });
     await user.fetch({ decrypt: false });
     const { publicKey } = user.attrs;
@@ -32,7 +41,8 @@ export default class GroupInvitation extends Model {
 
   async activate() {
     const { userGroups } = userGroupKeys();
-    if (userGroups[this.attrs.userGroupId]) {
+    const groupId: string = this.attrs.userGroupId as string;
+    if (userGroups[groupId]) {
       return true;
     }
     const groupMembership = new GroupMembership({
@@ -46,7 +56,7 @@ export default class GroupInvitation extends Model {
     return groupMembership;
   }
 
-  encryptionPublicKey() {
+  async encryptionPublicKey() {
     return this.userPublicKey;
   }
 

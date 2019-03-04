@@ -7,9 +7,26 @@ import SigningKey from './signing-key';
 import {
   userGroupKeys, addUserGroupKey, loadUserData, requireUserSession,
 } from '../helpers';
+import { Schema, Attrs } from '../types/index';
+
+interface Member {
+  username: string,
+  inviteId: string
+}
+
+interface UserGroupAttrs extends Attrs {
+  name?: string | any,
+  gaiaConfig: Object | any,
+  members: Array<any> | any,
+}
+
+const defaultMembers: Member[] = [];
 
 export default class UserGroup extends Model {
-  static schema = {
+  privateKey?: string;
+  attrs: UserGroupAttrs;
+
+  static schema : Schema = {
     name: String,
     gaiaConfig: Object,
     members: {
@@ -18,10 +35,10 @@ export default class UserGroup extends Model {
   }
 
   static defaults = {
-    members: [],
+    members: defaultMembers,
   }
 
-  static async find(id) {
+  static async find(id: string) {
     const { userGroups, signingKeys } = GroupMembership.userGroupKeys();
     if (!userGroups || !userGroups[id]) {
       throw new Error(`UserGroup not found with id: '${id}'. Have you called \`GroupMembership.cacheKeys()\`?`);
@@ -46,16 +63,19 @@ export default class UserGroup extends Model {
     return this;
   }
 
-  async makeGroupMembership(username) {
+  async makeGroupMembership(username: string): Promise<GroupInvitation> {
     let existingInviteId = null;
-    this.attrs.members.forEach((member) => {
+    this.attrs.members.forEach((member: Member) => {
       if (member.username === username) {
         existingInviteId = member.inviteId;
       }
     });
     if (existingInviteId) {
-      const invitation = await GroupInvitation.findById(existingInviteId, { decrypt: false });
-      return invitation;
+      const invitation = await GroupInvitation.findById(
+        existingInviteId,
+        { decrypt: false },
+      );
+      return invitation as GroupInvitation;
     }
     const invitation = await GroupInvitation.makeInvitation(username, this);
     this.attrs.members.push({
@@ -76,7 +96,7 @@ export default class UserGroup extends Model {
     return getPublicKeyFromPrivate(this.privateKey);
   }
 
-  encryptionPublicKey() {
+  async encryptionPublicKey() {
     return this.publicKey();
   }
 

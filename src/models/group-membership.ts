@@ -17,10 +17,10 @@ interface UserGroupKeys {
 }
 
 interface GroupMembershipAttrs extends Attrs {
-  userGroupId: string | any,
-  username: string,
-  signingKeyPrivateKey: string | any,
-  signingKeyId: string | any,
+  userGroupId?: string | any,
+  username?: string,
+  signingKeyPrivateKey?: string | any,
+  signingKeyId?: string | any,
 }
 
 export default class GroupMembership extends Model {
@@ -86,8 +86,8 @@ export default class GroupMembership extends Model {
 
   getSigningKey() {
     const { signingKeyId, signingKeyPrivateKey }: {
-      signingKeyId: string,
-      signingKeyPrivateKey: string
+      signingKeyId?: string,
+      signingKeyPrivateKey?: string
     } = this.attrs;
     return {
       _id: signingKeyId,
@@ -97,7 +97,10 @@ export default class GroupMembership extends Model {
 
   async fetchUserGroupSigningKey() {
     const _id: string = this.attrs.userGroupId;
-    const { signingKeyId }: { signingKeyId: string } = (await UserGroup.findById(_id)).attrs;
+    const userGroup = await UserGroup.findById<UserGroup>(_id) as UserGroup;
+    const { signingKeyId }: {
+      signingKeyId?: string
+    } = userGroup.attrs;
     return {
       _id,
       signingKeyId,

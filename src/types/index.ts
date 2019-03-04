@@ -10,16 +10,24 @@ export interface Schema {
 export interface Attrs {
   createdAt?: number,
   updatedAt?: number,
+  signingKeyId?: string,
   _id?: string
   [key: string]: any,
+}
+
+interface GaiaScope {
+  scope: string,
+  domain: string,
 }
 
 export interface UserSession {
   loadUserData: () => {
     appPrivateKey: string,
     profile: Object,
-    username: string
+    username: string,
+    hubUrl: string,
   },
 
   putFile: (path: string, value: any, options: any) => string;
+  connectToGaiaHub: (url: string, privateKey: string, scopes: Array<GaiaScope>) => any;
 }

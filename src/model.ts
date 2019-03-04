@@ -16,6 +16,10 @@ interface FetchOptions {
   decrypt?: boolean
 }
 
+interface Event {
+  data: string
+}
+
 export default class Model {
   public static schema: any;
   public static defaults: any = {};
@@ -35,8 +39,6 @@ export default class Model {
     _selector: FindQuery = {},
     { decrypt = true }: FetchOptions = {},
   ) {
-    // const model: Model = this;
-    console.log('sup');
     const selector: FindQuery = {
       ..._selector,
       radiksType: this.modelName(),
@@ -62,13 +64,13 @@ export default class Model {
       ..._selector,
       limit: 1,
     };
-    const results = await this.fetchList(selector, options);
+    const results: Array<T> = await this.fetchList(selector, options);
     return results[0];
   }
 
-  static findById<T extends Model>(_id: string, fetchOptions?: Object) {
+  static async findById<T extends Model>(_id: string, fetchOptions?: Object) {
     const Clazz = this;
-    const model = new Clazz({ _id });
+    const model: Model = new Clazz({ _id });
     return model.fetch(fetchOptions);
   }
 
@@ -124,7 +126,7 @@ export default class Model {
     return encryptObject(this);
   }
 
-  saveFile(encrypted) {
+  saveFile(encrypted: Object) {
     const userSession = requireUserSession();
     return userSession.putFile(this.blockstackPath(), JSON.stringify(encrypted), {
       encrypt: false,
@@ -235,6 +237,7 @@ export default class Model {
     return false;
   }
 
+
   static onStreamEvent = (_this, [event]) => {
     try {
       const { data } = event;
@@ -254,7 +257,7 @@ export default class Model {
     }
   }
 
-  static addStreamListener(callback) {
+  static addStreamListener(callback: () => void) {
     if (!this.emitter) {
       this.emitter = new EventEmitter();
     }
@@ -266,7 +269,7 @@ export default class Model {
     this.emitter.addListener(EVENT_NAME, callback);
   }
 
-  static removeStreamListener(callback) {
+  static removeStreamListener(callback: () => void) {
     this.emitter.removeListener(EVENT_NAME, callback);
     if (this.emitter.getListeners().length === 0) {
       Streamer.removeListener(this.onStreamEvent);
