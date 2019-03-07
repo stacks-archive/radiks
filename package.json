@@ -1,6 +1,6 @@
 {
   "name": "radiks",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Manage models with encryption and decentralized storage",
   "main": "lib/index.js",
   "author": "Hank Stoever",
@@ -31,7 +31,7 @@
     "mongodb": "^3.1.8"
   },
   "dependencies": {
-    "blockstack": "^18.0.4",
+    "blockstack": "^18.3.0",
     "faker": "^4.1.0",
     "lodash": "^4.17.11",
     "qs": "^6.5.2",
