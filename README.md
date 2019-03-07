@@ -76,7 +76,7 @@ Although radiks applications rely on a centrally-hosted database, it is still fu
 
 ## Installation
 
-To get started, first setup MongoDB and a radiks server. Check out the [`radiks-server`](https://github.com/hstove/radiks-server) documentation for more information.
+To get started, first setup MongoDB and a radiks server. You **must** use MongoDB >3.6, because they fixed an issue with naming patterns in keys. Check out the [`radiks-server`](https://github.com/hstove/radiks-server) documentation for more information.
 
 In your client-side code, install the `radiks` package:
 
@@ -85,6 +85,8 @@ yarn add radiks
 ## or
 npm install --save radiks
 ~~~
+
+**If you are using `blockstack.js` <=18, you must use the radiks version 0.1.\*, otherwise if you're using `blockstack.js` >=19, use radiks 0.2.\* .**
 
 ## Configuration
 
