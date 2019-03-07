@@ -12,6 +12,7 @@ A client-side framework for building model-driven decentralized applications on 
 - [Configuration](#configuration)
 - [Authentication](#authentication)
 - [Models](#models)
+  - [Quick start](#quick-start)
   - [Defining a model](#defining-a-model)
     - [Schema](#schema)
     - [Defaults](#defaults)
@@ -23,6 +24,7 @@ A client-side framework for building model-driven decentralized applications on 
     - [Updating a model](#updating-a-model)
     - [Saving a model](#saving-a-model)
   - [Querying models](#querying-models)
+  - [Fetching models created by the current user](#fetching-models-created-by-the-current-user)
   - [Managing relational data](#managing-relational-data)
 - [Collaboration](#collaboration)
   - [UserGroup Model](#usergroup-model)
@@ -76,7 +78,7 @@ Although radiks applications rely on a centrally-hosted database, it is still fu
 
 ## Installation
 
-To get started, first setup MongoDB and a radiks server. Check out the [`radiks-server`](https://github.com/hstove/radiks-server) documentation for more information.
+To get started, first setup MongoDB and a radiks server. You **must** use MongoDB >3.6, because they fixed an issue with naming patterns in keys. Check out the [`radiks-server`](https://github.com/hstove/radiks-server) documentation for more information.
 
 In your client-side code, install the `radiks` package:
 
@@ -85,6 +87,8 @@ yarn add radiks
 ## or
 npm install --save radiks
 ~~~
+
+**If you are using `blockstack.js` <=18, you must use the radiks version 0.1.\*, otherwise if you're using `blockstack.js` >=19, use radiks 0.2.\* .**
 
 ## Configuration
 
@@ -136,6 +140,33 @@ Calling `User.createWithCurrentUser` will do a few things:
 ## Models
 
 Creating models for your application's data is where radiks truly becomes helpful. We provide a `Model` class that you can extend to easily create, save, and fetch models.
+
+### Quick start
+
+```javascript
+import { Model, User } from 'radiks';
+
+class Todo extends Model {
+  static className = 'Todo';
+  static schema = { // all fields are encrypted by default
+    title: String,
+    completed: Boolean,
+  }
+};
+
+// after authentication:
+const todo = new Todo({ title: 'Use Radiks in an app' });
+await todo.save();
+todo.update({
+  completed: true,
+});
+await todo.save();
+
+const incompleteTodos = await Todo.fetchOwnList({ // fetch todos that this user created
+  completed: false
+});
+console.log(incompleteTodos.length); // 0
+```
 
 ### Defining a model
 
@@ -274,6 +305,16 @@ const tasks = await Task.fetchList({
   sort: '-order'
 })
 ~~~
+
+### Fetching models created by the current user
+
+Use the `fetchOwnList` method to find models that were created by the current user. By using this method, you can preserve privacy, because Radiks uses a `signingKey` that only the current user knows.
+
+```javascript
+const tasks = await Task.fetchOwnList({
+  completed: false
+});
+```
 
 ### Managing relational data
 
