@@ -1,7 +1,7 @@
-import qs from 'qs';
+import { stringify } from 'qs';
 import { getConfig } from './config';
 
-export const sendNewGaiaUrl = async (gaiaURL) => {
+export const sendNewGaiaUrl = async (gaiaURL: string) => {
   const { apiServer } = getConfig();
   const url = `${apiServer}/radiks/models/crawl`;
   // console.log(url, gaiaURL);
@@ -13,23 +13,35 @@ export const sendNewGaiaUrl = async (gaiaURL) => {
       'Content-Type': 'application/json',
     }),
   });
-  const { success, doc, message } = await response.json();
+  const { boolean: success, string: message } = await response.json();
   if (!success) {
     throw new Error(`Error when saving model: '${message}'`);
   }
-  return doc;
+  return success;
 };
 
-export const find = async (query) => {
+export interface FindQuery {
+  limit?: number,
+  [x: string]: any,
+}
+
+export const find = async (query: FindQuery) => {
   const { apiServer } = getConfig();
-  const queryString = qs.stringify(query, { arrayFormat: 'brackets', encode: false });
+  const queryString = stringify(query, { arrayFormat: 'brackets', encode: false });
   const url = `${apiServer}/radiks/models/find?${queryString}`;
   const response = await fetch(url);
   const data = await response.json();
   return data;
 };
 
-export const saveCentral = async (data) => {
+interface CentralSaveData {
+  signature: string,
+  username: string,
+  key: string,
+  value: any,
+}
+
+export const saveCentral = async (data: CentralSaveData) => {
   const { apiServer } = getConfig();
   const url = `${apiServer}/radiks/central`;
 
@@ -44,9 +56,9 @@ export const saveCentral = async (data) => {
   return success;
 };
 
-export const fetchCentral = async (key, username, signature) => {
+export const fetchCentral = async (key: string, username: string, signature: string) => {
   const { apiServer } = getConfig();
-  const queryString = qs.stringify({ username, signature });
+  const queryString = stringify({ username, signature });
   const url = `${apiServer}/radiks/central/${key}?${queryString}`;
   const response = await fetch(url);
   const value = await response.json();
