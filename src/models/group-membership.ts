@@ -30,7 +30,7 @@ export default class GroupMembership extends Model {
 
   static async fetchUserGroups(): Promise<UserGroupKeys> {
     const { username } = loadUserData();
-    const memberships : GroupMembership[] = await GroupMembership.fetchList({
+    const memberships: GroupMembership[] = await GroupMembership.fetchList({
       username,
     });
     const signingKeys: UserGroupKeys['signingKeys'] = {};

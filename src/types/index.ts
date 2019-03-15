@@ -1,10 +1,10 @@
 export interface SchemaAttribute {
-  type: String | Object | Array<any> | Number | Boolean;
+  type: string | Record<string, any> | any[] | number | boolean;
   decrypted?: boolean;
 }
 
 export interface Schema {
-  [key: string]: String | Object | Array<any> | Number | Boolean | SchemaAttribute;
+  [key: string]: string | Record<string, any> | any[] | number | boolean | SchemaAttribute;
 }
 
 export interface Attrs {
@@ -23,11 +23,11 @@ interface GaiaScope {
 export interface UserSession {
   loadUserData: () => {
     appPrivateKey: string,
-    profile: Object,
+    profile: Record<string, any>,
     username: string,
     hubUrl: string,
   },
 
   putFile: (path: string, value: any, options: any) => string;
-  connectToGaiaHub: (url: string, privateKey: string, scopes: Array<GaiaScope>) => any;
+  connectToGaiaHub: (url: string, privateKey: string, scopes: GaiaScope[]) => any;
 }

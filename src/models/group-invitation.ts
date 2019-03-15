@@ -6,8 +6,8 @@ import { userGroupKeys, loadUserData } from '../helpers';
 import { Schema, Attrs } from '../types/index';
 
 interface GroupInvitationAttrs extends Attrs {
-  userGroupId?: string | Object;
-  signingKeyPrivateKey?: string | Object;
+  userGroupId?: string | Record<string, any>,
+  signingKeyPrivateKey?: string | Record<string, any>,
 }
 
 export default class GroupInvitation extends Model {

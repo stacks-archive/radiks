@@ -45,30 +45,30 @@ export default class Model {
     };
     const { results } = await find(selector);
     const Clazz = this;
-    const modelDecryptions: Array<Promise<T>> = results.map((doc: any) => {
+    const modelDecryptions: Promise<T>[] = results.map((doc: any) => {
       const model = new Clazz(doc);
       if (decrypt) {
         return model.decrypt();
       }
       return Promise.resolve(model);
     });
-    const models: Array<T> = await Promise.all(modelDecryptions);
+    const models: T[] = await Promise.all(modelDecryptions);
     return models;
   }
 
   static async findOne<T extends Model>(
-    _selector:FindQuery = {},
+    _selector: FindQuery = {},
     options: FetchOptions = { decrypt: true },
   ) {
     const selector: FindQuery = {
       ..._selector,
       limit: 1,
     };
-    const results: Array<T> = await this.fetchList(selector, options);
+    const results: T[] = await this.fetchList(selector, options);
     return results[0];
   }
 
-  static async findById<T extends Model>(_id: string, fetchOptions?: Object) {
+  static async findById<T extends Model>(_id: string, fetchOptions?: Record<string, any>) {
     const Clazz = this;
     const model: Model = new Clazz({ _id });
     return model.fetch(fetchOptions);
@@ -126,7 +126,7 @@ export default class Model {
     return encryptObject(this);
   }
 
-  saveFile(encrypted: Object) {
+  saveFile(encrypted: Record<string, any>) {
     const userSession = requireUserSession();
     return userSession.putFile(this.blockstackPath(), JSON.stringify(encrypted), {
       encrypt: false,
@@ -174,7 +174,7 @@ export default class Model {
     const signingKey = this.getSigningKey();
     this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
     const { privateKey } = signingKey;
-    const contentToSign: Array<String | Number> = [this._id];
+    const contentToSign: (string | number)[] = [this._id];
     if (this.attrs.updatedAt) {
       contentToSign.push(this.attrs.updatedAt);
     }

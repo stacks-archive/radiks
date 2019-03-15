@@ -12,7 +12,7 @@ const decrypted = true;
 export default class BlockstackUser extends Model {
   static className = 'BlockstackUser';
 
-  static schema : Schema = {
+  static schema: Schema = {
     username: {
       type: String,
       decrypted,
@@ -60,7 +60,7 @@ export default class BlockstackUser extends Model {
   static createWithCurrentUser() {
     return new Promise((resolve, reject) => {
       const resolveUser = (user: BlockstackUser,
-        _resolve: (value?: {} | PromiseLike<{}>) => void) => {
+                           _resolve: (value?: {} | PromiseLike<{}>) => void) => {
         user.save().then(() => {
           GroupMembership.cacheKeys().then(() => {
             _resolve(user);
@@ -102,7 +102,7 @@ export default class BlockstackUser extends Model {
   async sign() {
     this.attrs.signingKeyId = 'personal';
     const { appPrivateKey } = loadUserData();
-    const contentToSign : Array<String | Number> = [this._id];
+    const contentToSign: (string | number)[] = [this._id];
     if (this.attrs.updatedAt) {
       contentToSign.push(this.attrs.updatedAt);
     }

@@ -25,7 +25,7 @@ export default class Streamer {
     return socket;
   }
 
-  static addListener(callback: (args: Array<any>) => void) {
+  static addListener(callback: (args: any[]) => void) {
     this.init();
     this.emitter.addListener(EVENT_NAME, callback);
   }

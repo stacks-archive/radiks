@@ -1,7 +1,7 @@
 import { stringify } from 'qs';
 import { getConfig } from './config';
 
-export const sendNewGaiaUrl = async (gaiaURL : string) => {
+export const sendNewGaiaUrl = async (gaiaURL: string) => {
   const { apiServer } = getConfig();
   const url = `${apiServer}/radiks/models/crawl`;
   // console.log(url, gaiaURL);
@@ -22,7 +22,7 @@ export const sendNewGaiaUrl = async (gaiaURL : string) => {
 
 export interface FindQuery {
   limit?: number,
-  [x: string]: any
+  [x: string]: any,
 }
 
 export const find = async (query: FindQuery) => {

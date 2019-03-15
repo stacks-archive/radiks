@@ -16,8 +16,8 @@ interface Member {
 
 interface UserGroupAttrs extends Attrs {
   name?: string | any,
-  gaiaConfig: Object | any,
-  members: Array<any> | any,
+  gaiaConfig: Record<string, any> | any,
+  members: any[] | any,
 }
 
 const defaultMembers: Member[] = [];
@@ -25,7 +25,7 @@ const defaultMembers: Member[] = [];
 export default class UserGroup extends Model {
   privateKey?: string;
 
-  static schema : Schema = {
+  static schema: Schema = {
     name: String,
     gaiaConfig: Object,
     members: {

@@ -4,7 +4,7 @@ import { getConfig } from './config';
 import { saveCentral, fetchCentral } from './api';
 
 class Central {
-  static save(key: string, value: Object) {
+  static save(key: string, value: Record<string, any>) {
     const { username, signature } = this.makeSignature(key);
     return saveCentral({
       username,
