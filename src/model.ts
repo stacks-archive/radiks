@@ -21,7 +21,7 @@ interface Event {
 }
 
 export default class Model {
-  public static schema: any;
+  public static schema: Schema;
   public static defaults: any = {};
   public static className?: string;
   public static emitter?: EventEmitter;
@@ -91,7 +91,7 @@ export default class Model {
   }
 
   constructor(attrs: Attrs = {}) {
-    const { schema, defaults } = <typeof Model> this.constructor;
+    const { schema, defaults } = this.constructor as typeof Model;
     const name = this.modelName();
     this.schema = schema;
     this._id = attrs._id || uuid().replace('-', '');
@@ -217,7 +217,7 @@ export default class Model {
   }
 
   modelName() {
-    const { modelName } = <typeof Model> this.constructor;
+    const { modelName } = this.constructor as typeof Model;
     return modelName.apply(this.constructor);
   }
 
