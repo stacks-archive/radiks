@@ -71,7 +71,7 @@ Although radiks applications rely on a centrally-hosted database, it is still fu
   - Because all data is also stored in Gaia, the user still controls a 'copy' of their data for as long as they need to. If the application server shuts down, the user can still access their data. It also makes it easy to backup or migrate their data at any time. [Learn more about Gaia](https://github.com/blockstack/gaia)
 - Censorship resistance
   - Again, because all data is also stored in Gaia, no party can revoke access to this data at any time.
-- Maximum privacy 
+- Maximum privacy
   - Because all data is encrypted on the client side before being stored anywhere, the application host cannot inspect, sell, or use your data in any way that you don't explicitly authorize
 - Built on decentralized authentication
   - Radiks is deeply tied to Blockstack authentication, which uses a blockchain and Gaia to give you full control over your user data. [Learn more about Blockstack auth](https://github.com/blockstack/blockstack.js/blob/master/src/auth/README.md)
@@ -449,6 +449,13 @@ const group = await UserGroup.find('my-id-here');
 ## Streaming real-time changes
 
 `Radiks-server` provides a websocket endpoint that will stream all new inserts and updates that it sees on the server. `Radiks` provides a helpful interface to poll for these changes on a model-by-model basis. For example, if you had a `Task` model, you could get real-time updates on all your tasks. This is especially useful in collaborative environments. As soon as a collaborator updates a model, you can get the change in real-time, and update your views accordingly.
+
+Before you can implement the websocket function, you must configure your `Radiks-Server` with [express-ws](https://github.com/HenningM/express-ws)
+
+~~~javascript
+const app = express()
+expressWS(app)
+~~~
 
 Here's an example for how to use the API:
 
