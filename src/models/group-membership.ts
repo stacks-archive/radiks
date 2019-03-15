@@ -16,17 +16,8 @@ interface UserGroupKeys {
   }
 }
 
-interface GroupMembershipAttrs extends Attrs {
-  userGroupId?: string | any,
-  username?: string,
-  signingKeyPrivateKey?: string | any,
-  signingKeyId?: string | any,
-}
-
 export default class GroupMembership extends Model {
   static className = 'GroupMembership';
-  attrs: GroupMembershipAttrs;
-
   static schema = {
     userGroupId: String,
     username: {

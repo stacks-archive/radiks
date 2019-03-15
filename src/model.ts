@@ -218,7 +218,7 @@ export default class Model {
 
   modelName() {
     const { modelName } = <typeof Model> this.constructor;
-    return modelName();
+    return modelName.apply(this.constructor);
   }
 
   isOwnedByUser() {

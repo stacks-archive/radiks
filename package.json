@@ -32,7 +32,7 @@
     "eslint-plugin-jest": "^21.24.1",
     "express": "^4.16.4",
     "get-random-values": "^1.2.0",
-    "jest": "^23.6.0",
+    "jest": "^24.5.0",
     "mock-local-storage": "^1.1.7",
     "mongodb": "^3.1.8",
     "typescript": "^3.3.3333"
@@ -47,13 +47,14 @@
     "wolfy87-eventemitter": "^5.2.5"
   },
   "scripts": {
+    "build": "yarn compile && yarn typescript",
     "compile": "babel src -d lib --extensions '.ts,.js'",
     "compile-watch": "babel src -d lib --watch --extensions '.ts,.js'",
     "test": "jest --verbose=false --ci --runInBand",
     "test-watch": "jest --verbose=false --ci --runInBand --watch",
     "eslint": "eslint src --ext .ts,.js",
-    "typescript": "tsc"
+    "typescript": "tsc",
+    "prepublishOnly": "yarn build"
   },
-  "types": "typed",
-  "jest": {}
+  "types": "typed"
 }

@@ -12,7 +12,6 @@ interface GroupInvitationAttrs extends Attrs {
 
 export default class GroupInvitation extends Model {
   static className = 'GroupInvitation';
-  attrs: GroupInvitationAttrs;
   userPublicKey: string;
 
   static schema: Schema = {

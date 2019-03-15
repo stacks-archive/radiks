@@ -12,7 +12,6 @@ interface SigningKeyAttrs extends Attrs {
 
 export default class SigningKey extends Model {
   static className = 'SigningKey';
-  attrs: SigningKeyAttrs;
 
   static schema = {
     publicKey: {
@@ -33,12 +32,12 @@ export default class SigningKey extends Model {
   static async create(attrs = {}) {
     const privateKey = makeECPrivateKey();
     const publicKey = getPublicKeyFromPrivate(privateKey);
-    const signingKey = new this({
+    const signingKey = new SigningKey({
       ...attrs,
       publicKey,
       privateKey,
     });
-    await signingKey.save();
+    await signingKey.save.apply(signingKey);
     return signingKey;
   }
 

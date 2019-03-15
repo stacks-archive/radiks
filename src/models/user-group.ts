@@ -24,7 +24,6 @@ const defaultMembers: Member[] = [];
 
 export default class UserGroup extends Model {
   privateKey?: string;
-  attrs: UserGroupAttrs;
 
   static schema : Schema = {
     name: String,
