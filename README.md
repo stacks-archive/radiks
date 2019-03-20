@@ -462,7 +462,7 @@ Here's an example for how to use the API:
 ~~~javascript
 import Task from './models/task';
 
-Task.addStreamListener((task) => {
+const streamCallback = (task) => {
   // this callback will be called whenever a task is created or updated.
   // `task` is an instance of `Task`, and all methods are defined on it.
   // If the user has the necessary keys to decrypt encrypted fields on the model,
@@ -471,7 +471,15 @@ Task.addStreamListener((task) => {
   if (task.projectId === myAppsCurrentProjectPageId) {
     // update your view here with this task
   }
-})
+}
+
+Task.addStreamListener(streamCallback)
+
+// later on, you might want to remove the stream listener (if the
+// user changes pages, for example). When calling `removeStreamListener`,
+// you MUST provide the exact same callback that you used with `addStreamListener`.
+
+Task.removeStreamListener(streamCallback)
 ~~~
 
 ## Saving centralized user-related data
