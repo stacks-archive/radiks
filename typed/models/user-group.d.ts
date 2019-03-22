@@ -1,18 +1,12 @@
 import Model from '../model';
 import GroupInvitation from './group-invitation';
-import { Schema, Attrs } from '../types/index';
+import { Schema } from '../types/index';
 interface Member {
     username: string;
     inviteId: string;
 }
-interface UserGroupAttrs extends Attrs {
-    name?: string | any;
-    gaiaConfig: Object | any;
-    members: Array<any> | any;
-}
 export default class UserGroup extends Model {
     privateKey?: string;
-    attrs: UserGroupAttrs;
     static schema: Schema;
     static defaults: {
         members: Member[];

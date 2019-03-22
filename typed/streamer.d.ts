@@ -4,6 +4,6 @@ export default class Streamer {
     static socket: WebSocket;
     static emitter: EventEmitter;
     static init(): WebSocket;
-    static addListener(callback: (args: Array<any>) => void): void;
+    static addListener(callback: (args: any[]) => void): void;
     static removeListener(callback: Function): void;
 }

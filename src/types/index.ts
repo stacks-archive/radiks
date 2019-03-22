@@ -4,7 +4,7 @@ export interface SchemaAttribute {
 }
 
 export interface Schema {
-  [key: string]: string | Record<string, any> | any[] | number | boolean | SchemaAttribute;
+  [key: string]: SchemaAttribute | string | Record<string, any> | any[] | number | boolean;
 }
 
 export interface Attrs {

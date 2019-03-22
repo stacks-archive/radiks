@@ -46,7 +46,7 @@
     "wolfy87-eventemitter": "^5.2.5"
   },
   "scripts": {
-    "build": "yarn compile && yarn typescript",
+    "build": "rm -rf lib && yarn compile && yarn typescript",
     "compile": "babel src -d lib --extensions '.ts,.js'",
     "compile-watch": "babel src -d lib --watch --extensions '.ts,.js'",
     "test": "jest --verbose=false --ci --runInBand",

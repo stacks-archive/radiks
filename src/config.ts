@@ -20,4 +20,4 @@ export const configure = (newConfig: UserSession) => {
 /**
  * some info
  */
-export const getConfig = () => config;
+export const getConfig = (): Config => config;
