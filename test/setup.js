@@ -40,6 +40,21 @@ jest.mock('../src/api', () => ({
     const results = await collection.find(query).toArray();
     resolve({ results });
   }),
+  destroyModel: model => new Promise(async (resolve) => {
+    if (!mockFindClient) {
+      const { MongoClient } = require('mongodb');
+      // console.log('connecting - find');
+      const url = 'mongodb://localhost:27017/radiks-test-server';
+      mockFindClient = await MongoClient.connect(url, {
+        useNewUrlParser: true,
+      });
+    }
+    const collection = mockFindClient
+      .db()
+      .collection('radiks-testing-models');
+    await collection.deleteOne({ _id: model._id });
+    return resolve(true);
+  }),
 }));
 
 Model.prototype.saveFile = jest.fn(encrypted => new Promise(async (resolve) => {

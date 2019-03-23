@@ -6,7 +6,9 @@ import EventEmitter from 'wolfy87-eventemitter';
 import {
   encryptObject, decryptObject, userGroupKeys, requireUserSession,
 } from './helpers';
-import { sendNewGaiaUrl, find, FindQuery } from './api';
+import {
+  sendNewGaiaUrl, find, FindQuery, destroyModel,
+} from './api';
 import Streamer from './streamer';
 import { Schema, Attrs } from './types/index';
 
@@ -212,11 +214,11 @@ export default class Model {
     return privateKey;
   }
 
-  static modelName() {
+  static modelName(): string {
     return this.className || this.name;
   }
 
-  modelName() {
+  modelName(): string {
     const { modelName } = this.constructor as typeof Model;
     return modelName.apply(this.constructor);
   }
@@ -274,6 +276,11 @@ export default class Model {
     if (this.emitter.getListeners().length === 0) {
       Streamer.removeListener(this.onStreamEvent);
     }
+  }
+
+  async destroy(): Promise<boolean> {
+    await this.sign();
+    return destroyModel(this);
   }
 
   // @abstract

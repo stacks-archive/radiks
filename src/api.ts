@@ -1,5 +1,6 @@
 import { stringify } from 'qs';
 import { getConfig } from './config';
+import Model from './model';
 
 export const sendNewGaiaUrl = async (gaiaURL: string) => {
   const { apiServer } = getConfig();
@@ -63,4 +64,16 @@ export const fetchCentral = async (key: string, username: string, signature: str
   const response = await fetch(url);
   const value = await response.json();
   return value;
+};
+
+export const destroyModel = async (model: Model) => {
+  const { apiServer } = getConfig();
+  const queryString = stringify({ signature: model.attrs.radiksSignature });
+  const url = `${apiServer}/radiks/models/${model._id}?${queryString}`;
+  const response = await fetch(url, {
+    method: 'DELETE',
+  });
+  const data = await response.json();
+  console.log(data);
+  return data.success;
 };
