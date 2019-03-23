@@ -23,6 +23,7 @@ A client-side framework for building model-driven decentralized applications on 
     - [Accessing model attributes](#accessing-model-attributes)
     - [Updating a model](#updating-a-model)
     - [Saving a model](#saving-a-model)
+    - [Deleting a model](#deleting-a-model)
   - [Querying models](#querying-models)
   - [Fetching models created by the current user](#fetching-models-created-by-the-current-user)
   - [Managing relational data](#managing-relational-data)
@@ -269,6 +270,14 @@ To save a model to Gaia and MongoDB, call the `save` function. First, it encrypt
 
 ~~~javascript
 await person.save();
+~~~
+
+#### Deleting a model
+
+To delete a model, just call the `destroy` method on it.
+
+~~~javascript
+await person.destroy();
 ~~~
 
 ### Querying models
