@@ -27,7 +27,6 @@ const stringToValue = (value: string, clazz: any) => {
   return value;
 };
 
-// TODO: import Model type
 export const decryptObject = async (encrypted: any, model: Model) => {
   const privateKey = await model.encryptionPrivateKey();
   const decrypted = {
@@ -39,10 +38,10 @@ export const decryptObject = async (encrypted: any, model: Model) => {
     const schemaValue = schema[key];
     let clazz = schemaValue;
     const schemaAttribute = schema[key] as SchemaAttribute;
-    if (schemaAttribute.decrypted) {
+    if (schemaAttribute && schemaAttribute.type) {
       clazz = schemaAttribute.type;
     }
-    if (clazz && !schemaAttribute.decrypted) {
+    if (clazz && schemaAttribute && !schemaAttribute.decrypted) {
       try {
         const decryptedValue = decryptECIES(privateKey, value) as string;
         decrypted[key] = stringToValue(decryptedValue, clazz);
