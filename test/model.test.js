@@ -1,3 +1,4 @@
+import './mocks/crypto';
 import './setup';
 import { verifyECDSA } from 'blockstack/lib/encryption';
 import { fakeModel, TestModel } from './helpers';
@@ -50,21 +51,30 @@ test('it fetches a signing key and saves with model', async () => {
   const user = await User.createWithCurrentUser();
   const model = fakeModel();
   await model.save();
-  expect(model.attrs.signingKeyId).toEqual(user.attrs.signingKeyId);
+  expect(model.attrs.signingKeyId).toEqual(user.attrs.personalSigningKeyId);
 });
 
 test('it signs ID with the signing key private key', async () => {
   const user = await User.createWithCurrentUser();
   const model = fakeModel();
   await model.save();
-  const { signingKeyId } = user.attrs;
-  const key = await SigningKey.findById(signingKeyId);
+  const { personalSigningKeyId } = user.attrs;
+  const key = await SigningKey.findById(personalSigningKeyId);
   // console.log(model.attrs);
   let message = `${model._id}-${model.attrs.updatedAt}`;
   expect(model.attrs.radiksSignature).not.toBeNull();
   expect(verifyECDSA(message, key.attrs.publicKey, model.attrs.radiksSignature)).toEqual(true);
   model.attrs.updatedAt = new Date().getTime();
   message = `${model._id}-${model.attrs.updatedAt}`;
-  model.sign();
+  await model.sign();
   expect(verifyECDSA(message, key.attrs.publicKey, model.attrs.radiksSignature)).toEqual(true);
+});
+
+test('it can delete a model', async () => {
+  const user = await User.createWithCurrentUser();
+  const model = fakeModel();
+  await model.save();
+  await model.destroy();
+  const fetched = await TestModel.fetchList({}, { decrypt: false });
+  expect(fetched.find(m => m._id === model._id)).toBeFalsy();
 });

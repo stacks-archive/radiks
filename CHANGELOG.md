@@ -1,5 +1,11 @@
 # Radiks-js Changelog
 
+## 0.2.0 - March 24, 2019
+
+- Support for Blockstack.JS version 19 and higher
+- Fully re-written in Typescript
+- Support for deleting models
+
 ## 0.1.10 - March 7, 2019
 
 - Adds the 'Central' API, with docs

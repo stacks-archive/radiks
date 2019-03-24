@@ -1,7 +1,14 @@
 import { makeECPrivateKey, getPublicKeyFromPrivate } from 'blockstack/lib/keys';
-import { loadUserData } from 'blockstack/lib/auth/authApp';
 
 import Model from '../model';
+import { loadUserData } from '../helpers';
+import { Attrs } from '../types/index';
+
+interface SigningKeyAttrs extends Attrs {
+  publicKey?: string,
+  privateKey?: string | any,
+  userGroupId?: string,
+}
 
 export default class SigningKey extends Model {
   static className = 'SigningKey';
@@ -25,12 +32,12 @@ export default class SigningKey extends Model {
   static async create(attrs = {}) {
     const privateKey = makeECPrivateKey();
     const publicKey = getPublicKeyFromPrivate(privateKey);
-    const signingKey = new this({
+    const signingKey = new SigningKey({
       ...attrs,
       publicKey,
       privateKey,
     });
-    await signingKey.save();
+    await signingKey.save.apply(signingKey);
     return signingKey;
   }
 

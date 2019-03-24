@@ -5,6 +5,10 @@ import { getConfig } from './config';
 const EVENT_NAME = 'RADIKS_STREAM_MESSAGE';
 
 export default class Streamer {
+  static initialized: boolean;
+  static socket: WebSocket;
+  static emitter: EventEmitter;
+
   static init() {
     if (this.initialized) {
       return this.socket;
@@ -21,12 +25,12 @@ export default class Streamer {
     return socket;
   }
 
-  static addListener(callback) {
+  static addListener(callback: (args: any[]) => void) {
     this.init();
     this.emitter.addListener(EVENT_NAME, callback);
   }
 
-  static removeListener(callback) {
+  static removeListener(callback: Function) {
     this.init();
     this.emitter.removeListener(EVENT_NAME, callback);
   }

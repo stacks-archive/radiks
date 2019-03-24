@@ -1,18 +1,18 @@
-import { loadUserData } from 'blockstack/lib/auth/authApp';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import { signECDSA } from 'blockstack/lib/encryption';
 
 import Model from '../model';
 import SigningKey from './signing-key';
 import GroupMembership from './group-membership';
-import { addPersonalSigningKey } from '../helpers';
+import { addPersonalSigningKey, loadUserData } from '../helpers';
+import { Schema } from '../types/index';
 
 const decrypted = true;
 
 export default class BlockstackUser extends Model {
   static className = 'BlockstackUser';
 
-  static schema = {
+  static schema: Schema = {
     username: {
       type: String,
       decrypted,
@@ -59,11 +59,14 @@ export default class BlockstackUser extends Model {
 
   static createWithCurrentUser() {
     return new Promise((resolve, reject) => {
-      const resolveUser = (user, _resolve) => user.save().then(() => {
-        GroupMembership.cacheKeys().then(() => {
-          _resolve(user);
+      const resolveUser = (user: BlockstackUser,
+                           _resolve: (value?: {} | PromiseLike<{}>) => void) => {
+        user.save().then(() => {
+          GroupMembership.cacheKeys().then(() => {
+            _resolve(user);
+          });
         });
-      });
+      };
       try {
         const user = this.currentUser();
         user.fetch().catch(() => {
@@ -84,7 +87,7 @@ export default class BlockstackUser extends Model {
               resolveUser(user, resolve);
             });
           } else {
-            SigningKey.findById(user.attrs.personalSigningKeyId).then((key) => {
+            SigningKey.findById(user.attrs.personalSigningKeyId).then((key: SigningKey) => {
               addPersonalSigningKey(key);
               resolveUser(user, resolve);
             });
@@ -96,10 +99,10 @@ export default class BlockstackUser extends Model {
     });
   }
 
-  sign() {
+  async sign() {
     this.attrs.signingKeyId = 'personal';
     const { appPrivateKey } = loadUserData();
-    const contentToSign = [this._id];
+    const contentToSign: (string | number)[] = [this._id];
     if (this.attrs.updatedAt) {
       contentToSign.push(this.attrs.updatedAt);
     }

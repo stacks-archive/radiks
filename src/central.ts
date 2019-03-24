@@ -4,7 +4,7 @@ import { getConfig } from './config';
 import { saveCentral, fetchCentral } from './api';
 
 class Central {
-  static save(key, value) {
+  static save(key: string, value: Record<string, any>) {
     const { username, signature } = this.makeSignature(key);
     return saveCentral({
       username,
@@ -14,13 +14,13 @@ class Central {
     });
   }
 
-  static get(key) {
+  static get(key: string) {
     const { username, signature } = this.makeSignature(key);
 
     return fetchCentral(key, username, signature);
   }
 
-  static makeSignature(key) {
+  static makeSignature(key: string) {
     const { userSession } = getConfig();
     const { appPrivateKey, username } = userSession.loadUserData();
     const message = `${username}-${key}`;
