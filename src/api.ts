@@ -2,7 +2,7 @@ import { stringify } from 'qs';
 import { getConfig } from './config';
 import Model from './model';
 
-export const sendNewGaiaUrl = async (gaiaURL: string) => {
+export const sendNewGaiaUrl = async (gaiaURL: string): Promise<boolean> => {
   const { apiServer } = getConfig();
   const url = `${apiServer}/radiks/models/crawl`;
   // console.log(url, gaiaURL);
@@ -14,7 +14,7 @@ export const sendNewGaiaUrl = async (gaiaURL: string) => {
       'Content-Type': 'application/json',
     }),
   });
-  const { boolean: success, string: message } = await response.json();
+  const { success, message } = await response.json();
   if (!success) {
     throw new Error(`Error when saving model: '${message}'`);
   }
