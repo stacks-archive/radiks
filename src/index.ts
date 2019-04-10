@@ -6,7 +6,7 @@ import GroupMembership from './models/group-membership';
 import GroupInvitation from './models/group-invitation';
 import Central from './central';
 
-module.exports = {
+export {
   Model,
   configure,
   getConfig,
