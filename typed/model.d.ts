@@ -44,11 +44,12 @@ export default class Model {
     encryptionPublicKey(): Promise<string>;
     encryptionPrivateKey(): string;
     static modelName(): string;
-    modelName(): any;
+    modelName(): string;
     isOwnedByUser(): boolean;
     static onStreamEvent: (_this: any, [event]: [any]) => void;
     static addStreamListener(callback: () => void): void;
     static removeStreamListener(callback: () => void): void;
+    destroy(): Promise<boolean>;
     beforeSave(): void;
     afterFetch(): void;
 }
