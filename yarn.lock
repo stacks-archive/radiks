@@ -1392,10 +1392,10 @@ bitcoinjs-lib@^4.0.3:
     varuint-bitcoin "^1.0.4"
     wif "^2.0.1"
 
-blockstack@19.2.1:
-  version "19.2.1"
-  resolved "https://registry.yarnpkg.com/blockstack/-/blockstack-19.2.1.tgz#c2b7e7c41181347dc467f847729bc173dd537fdf"
-  integrity sha512-gpJtP9481dAx6MR97r+FRDJVuLf+DulBlfyjX4XSh1k4o/X5Kj8hDYRk2V814LfmSwA8cer6a+k16bINuEEy0g==
+blockstack@19.1.0:
+  version "19.1.0"
+  resolved "https://registry.yarnpkg.com/blockstack/-/blockstack-19.1.0.tgz#6e77f3d8d66bb7c76e7733246f5efb6f3862bc95"
+  integrity sha512-ULyPhFLZncIb4Qf+nlBvJ9zH+Ii8xn7DhoXWKBQU959Ur9Xy86cPgKkZ06oFZAGOQjQ2AshMZZ+hnS5TyqAt1g==
   dependencies:
     ajv "^4.11.5"
     bip32 "^1.0.2"
@@ -4787,9 +4787,9 @@ query-string@^6.2.0:
     strict-uri-encode "^2.0.0"
 
 query-string@^6.3.0:
-  version "6.6.0"
-  resolved "https://registry.yarnpkg.com/query-string/-/query-string-6.6.0.tgz#a6b7dfd57ad67e346b143d033df2b1e4cfb6b53a"
-  integrity sha512-Xhvaa80rZzfvI7gYXF6ism5otKTyea90XROstBTBKiWE/tDfnIDbQwkGLguJaQBNweVCW4T9DoTe5eyox0CbZQ==
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-6.5.0.tgz#2e1a70125af01f6f04573692d02c09302a1d8bfc"
+  integrity sha512-TYC4hDjZSvVxLMEucDMySkuAS9UIzSbAiYGyA9GWCjLKB8fQpviFbjd20fD7uejCDxZS+ftSdBKE6DS+xucJFg==
   dependencies:
     decode-uri-component "^0.2.0"
     split-on-first "^1.0.0"
