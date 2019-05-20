@@ -25,6 +25,7 @@
     "babel-jest": "^23.6.0",
     "babel-plugin-async-to-promises": "^1.0.5",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "blockstack": "19.1.0",
     "dotenv": "^6.1.0",
     "eslint": "^5.3.0",
     "eslint-config-airbnb-base": "^13.1.0",
@@ -39,12 +40,14 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "blockstack": "19.0.1-beta.1",
     "faker": "^4.1.0",
     "qs": "^6.5.2",
     "query-string": "^6.2.0",
     "uuid": "^3.3.2",
     "wolfy87-eventemitter": "^5.2.5"
+  },
+  "peerDependencies": {
+    "blockstack": "^19.1.0"
   },
   "scripts": {
     "build": "rm -rf lib && yarn compile && yarn typescript",
