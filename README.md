@@ -315,6 +315,14 @@ const tasks = await Task.fetchList({
 })
 ~~~
 
+### Counting models
+
+You can also get the record count available directly.
+~~~javascript
+const dogHaters = Person.count({ likesDogs: false });
+// dogHaters is the count number
+~~~
+
 ### Fetching models created by the current user
 
 Use the `fetchOwnList` method to find models that were created by the current user. By using this method, you can preserve privacy, because Radiks uses a `signingKey` that only the current user knows.

@@ -7,7 +7,7 @@ import {
   encryptObject, decryptObject, userGroupKeys, requireUserSession,
 } from './helpers';
 import {
-  sendNewGaiaUrl, find, FindQuery, destroyModel,
+  sendNewGaiaUrl, find, count, FindQuery, destroyModel,
 } from './api';
 import Streamer from './streamer';
 import { Schema, Attrs } from './types/index';
@@ -74,6 +74,15 @@ export default class Model {
     const Clazz = this;
     const model: Model = new Clazz({ _id });
     return model.fetch(fetchOptions);
+  }
+
+  static async count(_selector: FindQuery = {}): Promise<number> {
+    const selector: FindQuery = {
+      ..._selector,
+      radiksType: this.modelName(),
+    };
+    const data = await count(selector);
+    return data.total;
   }
 
   /**
