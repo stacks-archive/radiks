@@ -287,7 +287,7 @@ To fetch multiple records that match a certain query, use the class's `fetchList
 Here are some examples:
 
 ~~~javascript
-const dogHaters = Person.fetchList({ likesDogs: false });
+const dogHaters = await Person.fetchList({ likesDogs: false });
 ~~~
 
 Or, imagine a `Task` model with a `name`, a boolean for `completed`, and an `order` attribute.
@@ -319,7 +319,7 @@ const tasks = await Task.fetchList({
 
 You can also get the count record directly.
 ~~~javascript
-const dogHaters = Person.count({ likesDogs: false });
+const dogHaters = await Person.count({ likesDogs: false });
 // dogHaters is the count number
 ~~~
 
