@@ -78,3 +78,10 @@ test('it can delete a model', async () => {
   const fetched = await TestModel.fetchList({}, { decrypt: false });
   expect(fetched.find(m => m._id === model._id)).toBeFalsy();
 });
+
+test('it return null if model not found', async () => {
+  const modelFindById = await TestModel.findById('notfound');
+  expect(modelFindById).toBe(undefined);
+  const modelFindOne = await TestModel.findOne({ _id: 'notfound' });
+  expect(modelFindOne).toBe(undefined);
+});
