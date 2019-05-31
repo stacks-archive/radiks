@@ -151,6 +151,10 @@ export default class Model {
     };
     const { results } = await find(query);
     const [attrs] = results;
+    // Object not found on the server so we return undefined
+    if (!attrs) {
+      return;
+    }
     this.attrs = {
       ...this.attrs,
       ...attrs,
