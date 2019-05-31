@@ -317,7 +317,7 @@ const tasks = await Task.fetchList({
 
 ### Counting models
 
-You can also get the record count available directly.
+You can also get the count record directly.
 ~~~javascript
 const dogHaters = Person.count({ likesDogs: false });
 // dogHaters is the count number
