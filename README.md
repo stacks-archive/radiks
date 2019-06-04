@@ -24,6 +24,7 @@ A client-side framework for building model-driven decentralized applications on 
     - [Updating a model](#updating-a-model)
     - [Saving a model](#saving-a-model)
     - [Deleting a model](#deleting-a-model)
+    - [Extending the user model](#extending-the-user-model)
   - [Querying models](#querying-models)
   - [Fetching models created by the current user](#fetching-models-created-by-the-current-user)
   - [Managing relational data](#managing-relational-data)
@@ -278,6 +279,25 @@ To delete a model, just call the `destroy` method on it.
 
 ~~~javascript
 await person.destroy();
+~~~
+
+#### Extending the user model
+
+You can extend the default user model to add your own fields.
+
+~~~javascript
+import { User } from 'radiks';
+
+// For example I want to add a public name on my user model
+class MyAppUserModel extends User {
+  static schema = {
+    ...User.schema,
+    name: {
+      type: String,
+      decrypted: true,
+    },
+  };
+}
 ~~~
 
 ### Querying models
