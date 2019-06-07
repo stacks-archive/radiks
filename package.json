@@ -39,7 +39,7 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "blockstack": "19.0.1-beta.1",
+    "blockstack": "19.2.1",
     "faker": "^4.1.0",
     "qs": "^6.5.2",
     "query-string": "^6.2.0",

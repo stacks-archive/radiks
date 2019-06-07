@@ -135,6 +135,11 @@ export default class Model {
     });
   }
 
+  deleteFile() {
+    const userSession = requireUserSession();
+    return userSession.deleteFile(this.blockstackPath());
+  }
+
   blockstackPath() {
     const path = `${this.modelName()}/${this._id}`;
     return path;
@@ -280,6 +285,7 @@ export default class Model {
 
   async destroy(): Promise<boolean> {
     await this.sign();
+    await this.deleteFile();
     return destroyModel(this);
   }
 
