@@ -423,14 +423,14 @@ Calling `create` on a new `UserGroup` will create the group and activate an invi
 
 #### Inviting a User
 
-Use the `makeGroupInvitation` method on a `UserGroup` instance to invite a user. The only argument passed to this method is the username of the user you want to invite.
+Use the `makeGroupMembership` method on a `UserGroup` instance to invite a user. The only argument passed to this method is the username of the user you want to invite.
 
 ~~~javascript
 import { UserGroup } from 'radiks';
 
 const group = await UserGroup.findById(myGroupId);
 const usernameToInvite = 'hankstoever.id';
-const invitation = await group.makeGroupInvitation(usernameToInvite);
+const invitation = await group.makeGroupMembership(usernameToInvite);
 console.log(invitation._id); // the ID used to later activate an invitation
 ~~~
 
