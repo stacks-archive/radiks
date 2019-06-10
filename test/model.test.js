@@ -73,8 +73,20 @@ test('it signs ID with the signing key private key', async () => {
 test('it can delete a model', async () => {
   const user = await User.createWithCurrentUser();
   const model = fakeModel();
+  let deleteFileWasCalled = false;
+  model.deleteFile = () => {
+    deleteFileWasCalled = true;
+  };
   await model.save();
   await model.destroy();
+  expect(deleteFileWasCalled).toBeTruthy();
   const fetched = await TestModel.fetchList({}, { decrypt: false });
   expect(fetched.find(m => m._id === model._id)).toBeFalsy();
+});
+
+test('it return null if model not found', async () => {
+  const modelFindById = await TestModel.findById('notfound');
+  expect(modelFindById).toBe(undefined);
+  const modelFindOne = await TestModel.findOne({ _id: 'notfound' });
+  expect(modelFindOne).toBe(undefined);
 });

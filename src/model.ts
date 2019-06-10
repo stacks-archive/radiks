@@ -7,7 +7,7 @@ import {
   encryptObject, decryptObject, userGroupKeys, requireUserSession,
 } from './helpers';
 import {
-  sendNewGaiaUrl, find, FindQuery, destroyModel,
+  sendNewGaiaUrl, find, count, FindQuery, destroyModel,
 } from './api';
 import Streamer from './streamer';
 import { Schema, Attrs } from './types/index';
@@ -76,6 +76,15 @@ export default class Model {
     return model.fetch(fetchOptions);
   }
 
+  static async count(_selector: FindQuery = {}): Promise<number> {
+    const selector: FindQuery = {
+      ..._selector,
+      radiksType: this.modelName(),
+    };
+    const data = await count(selector);
+    return data.total;
+  }
+
   /**
    * Fetch all models that are owned by the current user.
    * This only includes 'personally' owned models, and not those created
@@ -135,17 +144,26 @@ export default class Model {
     });
   }
 
+  deleteFile() {
+    const userSession = requireUserSession();
+    return userSession.deleteFile(this.blockstackPath());
+  }
+
   blockstackPath() {
     const path = `${this.modelName()}/${this._id}`;
     return path;
   }
 
-  async fetch({ decrypt = true } = {}) {
+  async fetch({ decrypt = true } = {}): Promise<this | undefined> {
     const query = {
       _id: this._id,
     };
     const { results } = await find(query);
     const [attrs] = results;
+    // Object not found on the server so we return undefined
+    if (!attrs) {
+      return undefined;
+    }
     this.attrs = {
       ...this.attrs,
       ...attrs,
@@ -280,6 +298,7 @@ export default class Model {
 
   async destroy(): Promise<boolean> {
     await this.sign();
+    await this.deleteFile();
     return destroyModel(this);
   }
 

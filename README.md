@@ -27,6 +27,7 @@ A client-side framework for building model-driven decentralized applications on 
   - [Querying models](#querying-models)
   - [Fetching models created by the current user](#fetching-models-created-by-the-current-user)
   - [Managing relational data](#managing-relational-data)
+  - [Extending the user model](#extending-the-user-model)
 - [Collaboration](#collaboration)
   - [UserGroup Model](#usergroup-model)
   - [General Workflow](#general-workflow)
@@ -287,7 +288,7 @@ To fetch multiple records that match a certain query, use the class's `fetchList
 Here are some examples:
 
 ~~~javascript
-const dogHaters = Person.fetchList({ likesDogs: false });
+const dogHaters = await Person.fetchList({ likesDogs: false });
 ~~~
 
 Or, imagine a `Task` model with a `name`, a boolean for `completed`, and an `order` attribute.
@@ -313,6 +314,14 @@ const tasks = await Task.fetchList({
   completed: false,
   sort: '-order'
 })
+~~~
+
+### Counting models
+
+You can also get the count record directly.
+~~~javascript
+const dogHaters = await Person.count({ likesDogs: false });
+// dogHaters is the count number
 ~~~
 
 ### Fetching models created by the current user
@@ -382,6 +391,25 @@ class Project extends Model {
 
 const project = await Project.findById('some-id-here');
 console.log(project.tasks); // will already have fetched and decrypted all related tasks
+~~~
+
+### Extending the user model
+
+You can extend the default user model to add your own fields.
+
+~~~javascript
+import { User } from 'radiks';
+
+// For example I want to add a public name on my user model
+class MyAppUserModel extends User {
+  static schema = {
+    ...User.schema,
+    name: {
+      type: String,
+      decrypted: true,
+    },
+  };
+}
 ~~~
 
 ## Collaboration
