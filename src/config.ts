@@ -1,4 +1,4 @@
-import { UserSession } from './types/index';
+import { UserSession } from 'blockstack';
 
 interface Config {
   apiServer: string,
