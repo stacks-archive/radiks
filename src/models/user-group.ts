@@ -107,20 +107,20 @@ export default class UserGroup extends Model {
     return signingKeys[this.attrs.signingKeyId];
   }
 
-  async makeGaiaConfig() {
-    const userData = loadUserData();
-    const { appPrivateKey, hubUrl } = userData;
-    const scopes = [
-      {
-        scope: 'putFilePrefix',
-        domain: `UserGroups/${this._id}/`,
-      },
-    ];
-    const userSession = requireUserSession();
-    const gaiaConfig = await userSession.connectToGaiaHub(hubUrl, appPrivateKey, scopes);
-    this.attrs.gaiaConfig = gaiaConfig;
-    return gaiaConfig;
-  }
+  // async makeGaiaConfig() {
+  //   const userData = loadUserData();
+  //   const { appPrivateKey, hubUrl } = userData;
+  //   const scopes = [
+  //     {
+  //       scope: 'putFilePrefix',
+  //       domain: `UserGroups/${this._id}/`,
+  //     },
+  //   ];
+  //   const userSession = requireUserSession();
+  //   const gaiaConfig = await userSession.connectToGaiaHub(hubUrl, appPrivateKey, scopes);
+  //   this.attrs.gaiaConfig = gaiaConfig;
+  //   return gaiaConfig;
+  // }
 
   static modelName = () => 'UserGroup'
 

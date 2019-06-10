@@ -10,7 +10,7 @@ let config: Config = {
   userSession: null,
 };
 
-export const configure = (newConfig: UserSession) => {
+export const configure = (newConfig: Config) => {
   config = {
     ...config,
     ...newConfig,
