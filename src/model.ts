@@ -154,7 +154,7 @@ export default class Model {
     return path;
   }
 
-  async fetch({ decrypt = true } = {}) {
+  async fetch({ decrypt = true } = {}): Promise<this | undefined> {
     const query = {
       _id: this._id,
     };
@@ -162,7 +162,7 @@ export default class Model {
     const [attrs] = results;
     // Object not found on the server so we return undefined
     if (!attrs) {
-      return;
+      return undefined;
     }
     this.attrs = {
       ...this.attrs,
