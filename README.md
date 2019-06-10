@@ -24,10 +24,10 @@ A client-side framework for building model-driven decentralized applications on 
     - [Updating a model](#updating-a-model)
     - [Saving a model](#saving-a-model)
     - [Deleting a model](#deleting-a-model)
-    - [Extending the user model](#extending-the-user-model)
   - [Querying models](#querying-models)
   - [Fetching models created by the current user](#fetching-models-created-by-the-current-user)
   - [Managing relational data](#managing-relational-data)
+  - [Extending the user model](#extending-the-user-model)
 - [Collaboration](#collaboration)
   - [UserGroup Model](#usergroup-model)
   - [General Workflow](#general-workflow)
@@ -281,25 +281,6 @@ To delete a model, just call the `destroy` method on it.
 await person.destroy();
 ~~~
 
-#### Extending the user model
-
-You can extend the default user model to add your own fields.
-
-~~~javascript
-import { User } from 'radiks';
-
-// For example I want to add a public name on my user model
-class MyAppUserModel extends User {
-  static schema = {
-    ...User.schema,
-    name: {
-      type: String,
-      decrypted: true,
-    },
-  };
-}
-~~~
-
 ### Querying models
 
 To fetch multiple records that match a certain query, use the class's `fetchList` function. This method creates an HTTP query to Radiks-server, which then queries the underlying database. Radiks-server uses the [`query-to-mongo`](https://github.com/pbatey/query-to-mongo) package to turn an HTTP query into a MongoDB query. Read the documentation for that package to learn how to do complex querying, sorting, limiting, etc.
@@ -410,6 +391,25 @@ class Project extends Model {
 
 const project = await Project.findById('some-id-here');
 console.log(project.tasks); // will already have fetched and decrypted all related tasks
+~~~
+
+### Extending the user model
+
+You can extend the default user model to add your own fields.
+
+~~~javascript
+import { User } from 'radiks';
+
+// For example I want to add a public name on my user model
+class MyAppUserModel extends User {
+  static schema = {
+    ...User.schema,
+    name: {
+      type: String,
+      decrypted: true,
+    },
+  };
+}
 ~~~
 
 ## Collaboration
