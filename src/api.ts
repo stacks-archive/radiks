@@ -3,10 +3,11 @@ import { getConfig } from './config';
 import Model from './model';
 
 export const sendNewGaiaUrl = async (gaiaURL: string): Promise<boolean> => {
-  const { apiServer } = getConfig();
+  const { apiServer, userSession } = getConfig();
   const url = `${apiServer}/radiks/models/crawl`;
+  const jwt = userSession.loadUserData().authResponseToken;
   // console.log(url, gaiaURL);
-  const data = { gaiaURL };
+  const data = { gaiaURL, jwt };
   const response = await fetch(url, {
     method: 'POST',
     body: JSON.stringify(data),
