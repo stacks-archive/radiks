@@ -10,6 +10,7 @@ import {
   sendNewGaiaUrl, find, count, FindQuery, destroyModel,
 } from './api';
 import Streamer from './streamer';
+import { getConfig } from './config';
 import { Schema, Attrs } from './types/index';
 
 const EVENT_NAME = 'MODEL_STREAM_EVENT';
@@ -27,7 +28,9 @@ export default class Model {
   public static defaults: any = {};
   public static className?: string;
   public static emitter?: EventEmitter;
+  public static includeUsername?: boolean = false;
   schema: Schema;
+  includeUsername?: boolean;
   _id: string;
   attrs: Attrs;
 
@@ -93,18 +96,25 @@ export default class Model {
    * @param {Object} _selector - A query to include when fetching models
    */
   static fetchOwnList(_selector: FindQuery = {}) {
-    const { _id } = userGroupKeys().personal;
     const selector = {
       ..._selector,
-      signingKeyId: _id,
     };
+    if (!this.includeUsername) {
+      const { _id } = userGroupKeys().personal;
+      selector.signingKeyId = _id;
+    } else {
+      const { userSession } = getConfig();
+      const { username } = userSession.loadUserData();
+      selector.username = username;
+    }
     return this.fetchList(selector);
   }
 
   constructor(attrs: Attrs = {}) {
-    const { schema, defaults } = this.constructor as typeof Model;
+    const { schema, defaults, includeUsername } = this.constructor as typeof Model;
     const name = this.modelName();
     this.schema = schema;
+    this.includeUsername = includeUsername;
     this._id = attrs._id || uuid().replace('-', '');
     this.attrs = {
       ...defaults,
@@ -191,9 +201,17 @@ export default class Model {
     if (this.attrs.updatable === false) {
       return true;
     }
-    const signingKey = this.getSigningKey();
-    this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
-    const { privateKey } = signingKey;
+    let privateKey: string;
+    if (!this.includeUsername) {
+      const signingKey = this.getSigningKey();
+      this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
+      privateKey = signingKey.privateKey;
+    } else {
+      const { userSession } = getConfig();
+      const { appPrivateKey, username } = userSession.loadUserData();
+      this.attrs.username = username;
+      privateKey = appPrivateKey;
+    }
     const contentToSign: (string | number)[] = [this._id];
     if (this.attrs.updatedAt) {
       contentToSign.push(this.attrs.updatedAt);
@@ -243,9 +261,15 @@ export default class Model {
 
   isOwnedByUser() {
     const keys = userGroupKeys();
-    if (this.attrs.signingKeyId === keys.personal._id) {
+    if (!this.includeUsername && this.attrs.signingKeyId === keys.personal._id) {
       return true;
-    } if (this.attrs.userGroupId) {
+    }
+    const { userSession } = getConfig();
+    const { username } = userSession.loadUserData();
+    if (this.includeUsername && this.attrs.username === username) {
+      return true;
+    }
+    if (this.attrs.userGroupId) {
       let isOwned = false;
       Object.keys(keys.userGroups).forEach((groupId) => {
         if (groupId === this.attrs.userGroupId) {
