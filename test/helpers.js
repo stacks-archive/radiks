@@ -30,3 +30,14 @@ export const fakeModel = () => {
   });
   return model;
 };
+
+export class ModelWithUsername extends Model {
+  static validateUsername = true;
+
+  static schema = {
+    message: {
+      type: String,
+      decrypted: true,
+    },
+  }
+}

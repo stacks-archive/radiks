@@ -1,9 +1,10 @@
 import './mocks/crypto';
 import './setup';
 import { verifyECDSA } from 'blockstack/lib/encryption';
-import { fakeModel, TestModel } from './helpers';
+import { fakeModel, TestModel, ModelWithUsername } from './helpers';
 import User from '../src/models/user';
 import SigningKey from '../src/models/signing-key';
+import { getConfig } from '../src/config';
 
 test('encrypts data', async (t) => {
   // crypto.getRandomValues(16);
@@ -89,4 +90,14 @@ test('it return null if model not found', async () => {
   expect(modelFindById).toBe(undefined);
   const modelFindOne = await TestModel.findOne({ _id: 'notfound' });
   expect(modelFindOne).toBe(undefined);
+});
+
+test.only('it includes username if validateUsername', async () => {
+  const user = await User.createWithCurrentUser();
+  const model = new ModelWithUsername({ message: 'hello' });
+  await model.save();
+  expect(model.attrs.username).toEqual(user.attrs.username);
+  expect(model.attrs.gaiaURL).not.toBeFalsy();
+  const gaiaURL = `https://gaia.blockstack.org/hub/1Me2Zi84EioQJcwDg5Kjgy5YaXgqXjxJYS/ModelWithUsername/${model._id}`;
+  expect(model.attrs.gaiaURL).toEqual(gaiaURL);
 });
