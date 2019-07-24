@@ -1,5 +1,9 @@
 # Radiks-js Changelog
 
+## 0.3.0-beta.1 - July 23, 2019
+
+- Includes a static `validateUsername` property to model. If `true`, then the username is included in the model attributes. See [#44](https://github.com/blockstack-radiks/radiks/pull/44)
+
 ## 0.2.1 - June 9th, 2019
 
 Thanks to @pradel for contributing most of the work in this release!
