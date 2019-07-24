@@ -26,7 +26,7 @@ export default class BlockstackUser extends Model {
       decrypted,
     },
     personalSigningKeyId: String,
-  }
+  };
 
   static currentUser() {
     if (typeof window === 'undefined') {
@@ -59,8 +59,10 @@ export default class BlockstackUser extends Model {
 
   static createWithCurrentUser() {
     return new Promise((resolve, reject) => {
-      const resolveUser = (user: BlockstackUser,
-                           _resolve: (value?: {} | PromiseLike<{}>) => void) => {
+      const resolveUser = (
+        user: BlockstackUser,
+        _resolve: (value?: {} | PromiseLike<{}>) => void,
+      ) => {
         user.save().then(() => {
           GroupMembership.cacheKeys().then(() => {
             _resolve(user);
@@ -69,30 +71,35 @@ export default class BlockstackUser extends Model {
       };
       try {
         const user = this.currentUser();
-        user.fetch().catch(() => {
-          // console.error('caught error', e);
-        }).finally(() => {
-          // console.log(user.attrs);
-          const userData = loadUserData();
-          const { username, profile, appPrivateKey } = userData;
-          const publicKey = getPublicKeyFromPrivate(appPrivateKey);
-          user.update({
-            username,
-            profile,
-            publicKey,
+        user
+          .fetch()
+          .catch(() => {
+            // console.error('caught error', e);
+          })
+          .finally(() => {
+            // console.log(user.attrs);
+            const userData = loadUserData();
+            const { username, profile, appPrivateKey } = userData;
+            const publicKey = getPublicKeyFromPrivate(appPrivateKey);
+            user.update({
+              username,
+              profile,
+              publicKey,
+            });
+            if (!user.attrs.personalSigningKeyId) {
+              user.createSigningKey().then((key) => {
+                addPersonalSigningKey(key);
+                resolveUser(user, resolve);
+              });
+            } else {
+              SigningKey.findById(user.attrs.personalSigningKeyId).then(
+                (key: SigningKey) => {
+                  addPersonalSigningKey(key);
+                  resolveUser(user, resolve);
+                },
+              );
+            }
           });
-          if (!user.attrs.personalSigningKeyId) {
-            user.createSigningKey().then((key) => {
-              addPersonalSigningKey(key);
-              resolveUser(user, resolve);
-            });
-          } else {
-            SigningKey.findById(user.attrs.personalSigningKeyId).then((key: SigningKey) => {
-              addPersonalSigningKey(key);
-              resolveUser(user, resolve);
-            });
-          }
-        });
       } catch (error) {
         reject(error);
       }
