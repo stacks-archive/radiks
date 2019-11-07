@@ -1,31 +1,41 @@
 import { Indexer, CentralSaveData, FindQuery } from "./indexer";
-import { Model } from "..";
+import { Model, getConfig } from "..";
+import { stringify } from "querystring";
 
 const OrbitDB = require('orbit-db');
 
 export class OrbitDbIndexer implements Indexer {
 
-    constructor(ipfs, dbName = 'default-radiks') {
+    private db: any;
+
+    constructor(ipfs) {
+        const { apiServer } = getConfig();
         ipfs.on('error', (e) => console.error(e))
         ipfs.on('ready', async () => {
             const orbitdb = await OrbitDB.createInstance(ipfs)
 
             // Create / Open a database
-            const db = await orbitdb.log(dbName)
-            await db.load()
+            const db = await orbitdb.open(apiServer, {
+                // If database doesn't exist, create it
+                create: true,
+                overwrite: true,
+                // Load only the local version of the database,
+                // don't load the latest from the network yet
+                localOnly: false,
+                type: 'docs',
+                write: ['*'],
+              });
+
+            db.events.on('ready', () => {
+                console.log(`Database is ready!`)
+            });
+            // Load the latest local copy of the DB.
+            await db.load();
 
             // Listen for updates from peers
             db.events.on('replicated', (address) => {
                 console.log(db.iterator({ limit: -1 }).collect())
             })
-
-            // Add an entry
-            const hash = await db.add('world')
-            console.log(hash)
-
-            // Query
-            const result = db.iterator({ limit: -1 }).collect()
-            console.log(JSON.stringify(result, null, 2))
         });
     }
 
@@ -41,15 +51,18 @@ export class OrbitDbIndexer implements Indexer {
         throw new Error("Method not implemented.");
     }
 
-    fetchCentral(key: string, username: string, signature: string) {
-        throw new Error("Method not implemented.");
+    async fetchCentral(key: string, username: string, signature: string) {
+        const queryString = stringify({ username, signature });
+        return await this.db.get(key);
     }
 
-    saveCentral(data: CentralSaveData) {
-        throw new Error("Method not implemented.");
+    async saveCentral(data: CentralSaveData) {
+        await this.db.put(data);
+        return true; // successfully saved!
     }
     
-    destroyModel(model: Model) {
-        throw new Error("Method not implemented.");
+    async destroyModel(model: Model) {
+        const hash = await this.db.del(model._id)
+        return true;
     }
 }
