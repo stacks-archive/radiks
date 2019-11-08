@@ -1,8 +1,7 @@
 import { Indexer, CentralSaveData, FindQuery } from "./indexer";
 import { Model, getConfig } from "..";
-import { stringify } from "querystring";
 
-const OrbitDB = require('orbit-db');
+import OrbitDB from 'orbit-db';
 
 export class OrbitDbIndexer implements Indexer {
 
@@ -43,16 +42,25 @@ export class OrbitDbIndexer implements Indexer {
         throw new Error("Method not implemented.");
     }
 
-    find(query: FindQuery): Promise<any> {
-        throw new Error("Method not implemented.");
+    async find(query: FindQuery): Promise<any> {
+        const keys = Object.keys(query);
+        const all = await this.db.query((doc) => {
+            let valid: boolean;
+            for (let key in keys) {
+                valid = valid && doc[key] === query[key];
+            }
+            return valid;
+        });
+        return all;
     }
 
-    count(query: FindQuery): Promise<any> {
-        throw new Error("Method not implemented.");
+    async count(query: FindQuery): Promise<any> {
+        const x = await this.find(query);
+        return x.length;
     }
 
     async fetchCentral(key: string, username: string, signature: string) {
-        const queryString = stringify({ username, signature });
+        // const queryString = stringify({ username, signature });
         return await this.db.get(key);
     }
 
