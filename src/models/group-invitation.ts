@@ -17,7 +17,10 @@ export default class GroupInvitation extends Model {
   static schema: Schema = {
     userGroupId: String,
     signingKeyPrivateKey: String,
-    signingKeyId: String,
+    signingKeyId: {
+      type: String,
+      decrypted: true,
+    },
   }
 
   static defaults = {

@@ -25,7 +25,10 @@ export default class GroupMembership extends Model {
       decrypted: true,
     },
     signingKeyPrivateKey: String,
-    signingKeyId: String,
+    signingKeyId: {
+      type: String,
+      decrypted: true,
+    },
   }
 
   static async fetchUserGroups(): Promise<UserGroupKeys> {
