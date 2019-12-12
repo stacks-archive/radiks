@@ -5,3 +5,7 @@ typed
 yarn-debug.log*
 yarn-error.log*
 .env
+
+.idea/
+
+.DS_Store
