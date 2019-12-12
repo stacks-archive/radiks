@@ -1,4 +1,7 @@
+import md5 from 'blueimp-md5';
+
 import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption';
+import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import { getConfig } from './config';
 import Model from './model';
 import { SchemaAttribute } from './types';
@@ -127,4 +130,23 @@ export const loadUserData = () => {
     return userSession.loadUserData();
   }
   return null;
+};
+
+
+export interface CustomWindow extends Window {
+  reservedUsers: [string];
+}
+
+declare let window: CustomWindow;
+
+export const currentUserId = (): string => {
+  const userData = loadUserData();
+  const { username, appPrivateKey } = userData;
+
+  if (username && window.reservedUsers && window.reservedUsers.includes(username)) {
+    return username;
+  }
+
+  const publicKey = getPublicKeyFromPrivate(appPrivateKey);
+  return md5(publicKey);
 };
