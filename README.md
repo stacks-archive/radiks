@@ -76,7 +76,7 @@ Although radiks applications rely on a centrally-hosted database, it is still fu
 - Maximum privacy
   - Because all data is encrypted on the client side before being stored anywhere, the application host cannot inspect, sell, or use your data in any way that you don't explicitly authorize
 - Built on decentralized authentication
-  - Radiks is deeply tied to Blockstack authentication, which uses a blockchain and Gaia to give you full control over your user data. [Learn more about Blockstack auth](https://github.com/blockstack/blockstack.js/blob/master/src/auth/README.md)
+  - Radiks is deeply tied to Blockstack authentication, which uses a blockchain and Gaia to give you full control over your user data. [Learn more about Blockstack auth](https://docs.blockstack.org/develop/overview_auth.html)
 
 ## Installation
 
