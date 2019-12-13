@@ -134,7 +134,7 @@ export const loadUserData = () => {
 
 
 export interface CustomWindow extends Window {
-  reservedUsers: [string];
+  _reservedUsersNames: [string];
 }
 
 declare let window: CustomWindow;
@@ -143,7 +143,7 @@ export const currentUserId = (): string => {
   const userData = loadUserData();
   const { username, appPrivateKey } = userData;
 
-  if (username && window.reservedUsers && window.reservedUsers.includes(username)) {
+  if (username && window._reservedUsersNames && window._reservedUsersNames.includes(username)) {
     return username;
   }
 
