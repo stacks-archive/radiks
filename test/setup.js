@@ -22,7 +22,7 @@ jest.mock('../src/api', () => ({
       // console.log('connecting - save');
       const { MongoClient } = require('mongodb');
       const url = 'mongodb://localhost:27017/radiks-test-server';
-      mockSaveClient = await MongoClient.connect(url, { useNewUrlParser: true });
+      mockSaveClient = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology:true });
     }
     const collection = mockSaveClient.db().collection('radiks-testing-models');
     // console.log(encrypted);
@@ -34,7 +34,7 @@ jest.mock('../src/api', () => ({
       const { MongoClient } = require('mongodb');
       // console.log('connecting - find');
       const url = 'mongodb://localhost:27017/radiks-test-server';
-      mockFindClient = await MongoClient.connect(url, { useNewUrlParser: true });
+      mockFindClient = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology:true });
     }
     const collection = mockFindClient.db().collection('radiks-testing-models');
     const results = await collection.find(query).toArray();
@@ -47,6 +47,7 @@ jest.mock('../src/api', () => ({
       const url = 'mongodb://localhost:27017/radiks-test-server';
       mockFindClient = await MongoClient.connect(url, {
         useNewUrlParser: true,
+        useUnifiedTopology: true
       });
     }
     const collection = mockFindClient
@@ -74,7 +75,7 @@ let collectionClient;
 
 beforeAll(async () => {
   const url = 'mongodb://localhost:27017/radiks-test-server';
-  collectionClient = await MongoClient.connect(url, { useNewUrlParser: true });
+  collectionClient = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
   collection = collectionClient.db().collection('radiks-testing-models');
 });
 
