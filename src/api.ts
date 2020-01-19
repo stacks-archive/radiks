@@ -22,8 +22,12 @@ export const sendNewGaiaUrl = async (gaiaURL: string): Promise<boolean> => {
 };
 
 export interface FindQuery {
-  limit?: number,
-  [x: string]: any,
+  limit?: number;
+  [x: string]: any;
+}
+
+export interface FindCriteria {
+  criteria: any;
 }
 
 export const find = async (query: FindQuery) => {
@@ -40,6 +44,29 @@ export const count = async (query: FindQuery) => {
   const queryString = stringify(query, { arrayFormat: 'brackets', encode: false });
   const url = `${apiServer}/radiks/models/count?${queryString}`;
   const response = await fetch(url);
+  const data = await response.json();
+  return data;
+};
+
+export const findByCriteria = async (
+  query: FindQuery,
+  criteria: FindCriteria
+) => {
+  const { apiServer } = getConfig();
+  const queryString = stringify(query, {
+    arrayFormat: 'brackets',
+    encode: false,
+  });
+  const url = `${apiServer}/radiks/models/query?${queryString}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(criteria),
+  });
+
   const data = await response.json();
   return data;
 };
