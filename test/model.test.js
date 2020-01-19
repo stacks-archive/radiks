@@ -54,6 +54,34 @@ test('it fetches a signing key and saves with model', async () => {
   expect(model.attrs.signingKeyId).toEqual(user.attrs.personalSigningKeyId);
 });
 
+test('it fetch a list of models', async () => {
+  const user = await User.createWithCurrentUser();
+  const model = fakeModel();
+  await model.save();
+  const result = await TestModel.fetchList({ name: 'tester' });
+  expect(result.length).toEqual(1);
+  const emptyResult = await TestModel.fetchList({ name: 'tester2' });
+  expect(emptyResult.length).toEqual(0);
+});
+
+test('it fetch a list of models with $or query', async () => {
+  const user = await User.createWithCurrentUser();
+  const model = fakeModel();
+  await model.save();
+  let orResult = await TestModel.fetchList(
+    { limit: 1 },
+    {},
+    { criteria: { $or: [{ name: 'tester' }] } }
+  );
+  expect(orResult.length).toEqual(1);
+  orResult = await TestModel.fetchList(
+    { limit: 1 },
+    {},
+    { criteria: { $or: [{ name: 'tester2' }] } }
+  );
+  expect(orResult.length).toEqual(0);
+});
+
 test('it signs ID with the signing key private key', async () => {
   const user = await User.createWithCurrentUser();
   const model = fakeModel();

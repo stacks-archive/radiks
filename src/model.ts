@@ -10,7 +10,13 @@ import {
   requireUserSession,
 } from './helpers';
 import {
-  sendNewGaiaUrl, find, count, FindQuery, destroyModel,
+  sendNewGaiaUrl,
+  find,
+  findByCriteria,
+  count,
+  FindQuery,
+  FindCriteria,
+  destroyModel,
 } from './api';
 import Streamer from './streamer';
 import { Schema, Attrs } from './types/index';
@@ -42,14 +48,32 @@ export default class Model {
   static async fetchList<T extends Model>(
     _selector: FindQuery = {},
     { decrypt = true }: FetchOptions = {},
+    _findCriteria?: FindCriteria
   ) {
-    const selector: FindQuery = {
-      ..._selector,
-      radiksType: this.modelName(),
-    };
-    const { results } = await find(selector);
+    let list;
+    if (_findCriteria) {
+      const query: FindQuery = {
+        ..._selector,
+      };
+      const findCriteria: FindCriteria = {
+        criteria: {
+          ..._findCriteria.criteria,
+          radiksType: this.modelName(),
+        },
+      };
+      const response = await findByCriteria(query, findCriteria.criteria);
+      list = response.results;
+    } else {
+      const selector: FindQuery = {
+        ..._selector,
+        radiksType: this.modelName(),
+      };
+      const response = await find(selector);
+      list = response.results;
+    }
+
     const Clazz = this;
-    const modelDecryptions: Promise<T>[] = results.map((doc: any) => {
+    const modelDecryptions: Promise<T>[] = list.map((doc: any) => {
       const model = new Clazz(doc);
       if (decrypt) {
         return model.decrypt();
