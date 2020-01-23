@@ -1,12 +1,11 @@
+import { encrypt, decrypt } from 'aes256';
+import cryptoRandomString from 'crypto-random-string';
 import Model from '../model';
-import User from './user';
 import GroupMembership from './group-membership';
 import UserGroup from './user-group';
 import { userGroupKeys, loadUserData } from '../helpers';
-import { Schema, Attrs } from '../types/index';
-import { encrypt, decrypt } from 'aes256';
-import cryptoRandomString from 'crypto-random-string';
-
+import { Schema } from '../types/index';
+import { GroupInvitation } from '..';
 export default class GenericGroupInvitation extends Model {
   static className = 'GenericGroupInvitation';
   secretKey: string;
@@ -21,11 +20,11 @@ export default class GenericGroupInvitation extends Model {
       type: String,
       decrypted: true,
     },
-  }
+  };
 
   static defaults = {
     updatable: false,
-  }
+  };
 
   static async makeGenericInvitation(userGroup: UserGroup) {
     const invitationDetails = JSON.stringify({
@@ -43,27 +42,38 @@ export default class GenericGroupInvitation extends Model {
     return invitation;
   }
 
-  async activate(secretKey) {
-    const invitationDetailsDecrypted =
-      decrypt(secretKey, this.attrs.invitationDetails);
-    const {
-      userGroupId,
-      signingKeyPrivateKey,
-      signingKeyId
-    } = JSON.parse(invitationDetailsDecrypted);
+  async activate(secretKey: String) {
+    const invitationDetailsDecrypted = decrypt(
+      secretKey,
+      this.attrs.invitationDetails
+    );
+    const { userGroupId, signingKeyPrivateKey, signingKeyId } = JSON.parse(
+      invitationDetailsDecrypted
+    );
     const { userGroups } = userGroupKeys();
     const groupId: string = userGroupId as string;
     if (userGroups[groupId]) {
       return true;
     }
+    const username = loadUserData().username;
     const groupMembership = new GroupMembership({
       userGroupId,
-      username: loadUserData().username,
+      username,
       signingKeyPrivateKey,
       signingKeyId,
     });
     await groupMembership.save();
-    await GroupMembership.cacheKeys();
+    await GroupMembership.cacheGroupKey(groupMembership);
+
+    const encryptedUserGroup = (await UserGroup.findById(groupId, {
+      decrypt: false,
+    })) as UserGroup;
+    encryptedUserGroup.privateKey = signingKeyPrivateKey;
+    const userGroup = await encryptedUserGroup.decrypt();
+    userGroup.attrs.members.push({
+      username,
+    });
+    await userGroup.save();
     return groupMembership;
   }
 }

@@ -6,19 +6,22 @@ import GroupInvitation from './group-invitation';
 import GenericGroupInvitation from './generic-group-invitation';
 import SigningKey from './signing-key';
 import {
-  userGroupKeys, addUserGroupKey, loadUserData, requireUserSession,
+  userGroupKeys,
+  addUserGroupKey,
+  loadUserData,
+  requireUserSession,
 } from '../helpers';
 import { Schema, Attrs } from '../types/index';
 
 interface Member {
-  username: string,
-  inviteId: string
+  username: string;
+  inviteId: string;
 }
 
 interface UserGroupAttrs extends Attrs {
-  name?: string | any,
-  gaiaConfig: Record<string, any> | any,
-  members: any[] | any,
+  name?: string | any;
+  gaiaConfig: Record<string, any> | any;
+  members: any[] | any;
 }
 
 const defaultMembers: Member[] = [];
@@ -32,16 +35,18 @@ export default class UserGroup extends Model {
     members: {
       type: Array,
     },
-  }
+  };
 
   static defaults = {
     members: defaultMembers,
-  }
+  };
 
   static async find(id: string) {
     const { userGroups, signingKeys } = GroupMembership.userGroupKeys();
     if (!userGroups || !userGroups[id]) {
-      throw new Error(`UserGroup not found with id: '${id}'. Have you called \`GroupMembership.cacheKeys()\`?`);
+      throw new Error(
+        `UserGroup not found with id: '${id}'. Have you called \`GroupMembership.cacheKeys()\`?`
+      );
     }
     const signingKey = userGroups[id];
     const privateKey = signingKeys[signingKey];
@@ -63,31 +68,26 @@ export default class UserGroup extends Model {
     return this;
   }
 
-  async makeGroupMembership(username?: string): Promise<GroupInvitation> {
-    if (username) {
-      let existingInviteId = null;
-      this.attrs.members.forEach((member: Member) => {
-        if (member.username === username) {
-          existingInviteId = member.inviteId;
-        }
-      });
-      if (existingInviteId) {
-        const invitation = await GroupInvitation.findById(
-          existingInviteId,
-          { decrypt: false },
-        );
-        return invitation as GroupInvitation;
+  async makeGroupMembership(username: string): Promise<GroupInvitation> {
+    let existingInviteId = null;
+    this.attrs.members.forEach((member: Member) => {
+      if (member.username === username) {
+        existingInviteId = member.inviteId;
       }
-      const invitation = await GroupInvitation.makeInvitation(username, this);
-      this.attrs.members.push({
-        username,
-        inviteId: invitation._id,
+    });
+    if (existingInviteId) {
+      const invitation = await GroupInvitation.findById(existingInviteId, {
+        decrypt: false,
       });
-      await this.save();
-      return invitation;
-    } else {
-      return await GenericGroupInvitation.makeGenericInvitation(this);
+      return invitation as GroupInvitation;
     }
+    const invitation = await GroupInvitation.makeInvitation(username, this);
+    this.attrs.members.push({
+      username,
+      inviteId: invitation._id,
+    });
+    await this.save();
+    return invitation;
   }
 
   static myGroups() {
@@ -127,7 +127,7 @@ export default class UserGroup extends Model {
   //   return gaiaConfig;
   // }
 
-  static modelName = () => 'UserGroup'
+  static modelName = () => 'UserGroup';
 
   getSigningKey() {
     const { userGroups, signingKeys } = userGroupKeys();
