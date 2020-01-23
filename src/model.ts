@@ -69,7 +69,8 @@ export default class Model {
       limit: 1,
     };
     const results: T[] = await this.fetchList(selector, options);
-    return results[0];
+    //fixed by adding a check to see if the results has any results other will get index out of range
+    return results && results.length ? results[0] : {};
   }
 
   static async findById<T extends Model>(
@@ -133,7 +134,7 @@ export default class Model {
         await sendNewGaiaUrl(gaiaURL);
         resolve(this);
       } catch (error) {
-        reject(error);
+        reject('Could not save Record to user gaia storage, '+ error);
       }
     });
   }
@@ -171,6 +172,7 @@ export default class Model {
     const [attrs] = results;
     // Object not found on the server so we return undefined
     if (!attrs) {
+      console.error('Object not found on the server')
       return undefined;
     }
     this.attrs = {
@@ -223,6 +225,7 @@ export default class Model {
         privateKey,
       };
     }
+    console.log('No userGroupId available')
     return userGroupKeys().personal;
   }
 
@@ -262,8 +265,10 @@ export default class Model {
           isOwned = true;
         }
       });
+      if(!isOwned) console.error('Object not owned by user');
       return isOwned;
     }
+    console.error('Object not owned by user')
     return false;
   }
 
@@ -279,10 +284,11 @@ export default class Model {
           });
         } else {
           _this.emitter.emit(EVENT_NAME, model);
+          console.error('Model not owned by current user');
         }
       }
     } catch (error) {
-      // console.error(error.message);
+      console.error( 'Cannot parse model data : ', error.message );
     }
   };
 
