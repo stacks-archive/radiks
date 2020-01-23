@@ -451,8 +451,7 @@ Calling `create` on a new `UserGroup` will create the group and activate an invi
 
 #### Inviting a User
 
-Use the `makeGroupMembership` method on a `UserGroup` instance to invite a user. You can pass username argument to this method if want to invite specific user. Or you can pass no arguments and create so called
-generic invitation with secretCode that user should have to activate the invitation.
+Use the `makeGroupMembership` method on a `UserGroup` instance to invite a user. The only argument passed to this method is the username of the user you want to invite.
 
 ~~~javascript
 import { UserGroup } from 'radiks';
@@ -460,12 +459,21 @@ import { UserGroup } from 'radiks';
 const group = await UserGroup.findById(myGroupId);
 const usernameToInvite = 'hankstoever.id';
 
-// Creating user-specific invitation
 const invitation = await group.makeGroupMembership(usernameToInvite);
 console.log(invitation._id); // the ID used to later activate an invitation
+~~~
+
+#### Generic invitation
+
+You can also create a generic invitation that any user can activate, if they are provided with randomly generated secret key, which should be used to decrypt the invitation. The key is generated when the generic invitation is being created.
+
+~~~javascript
+import { GenericGroupInvitation, UserGroup } from 'radiks';
+
+const group = await UserGroup.findById(myGroupId);
 
 // Creating generic invitation
-const genericInvitation = await group.makeGroupMembership();
+const genericInvitation = await GenericGroupInvitation.makeGenericInvitation(group);
 console.log(genericInvitation._id); // the ID used to later activate an invitation
 console.log(genericInvitation.secretCode); // the secretCode used to later activate an invitation
 ~~~

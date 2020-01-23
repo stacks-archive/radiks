@@ -92,9 +92,7 @@ test('it creates and activates generic group invitation', async t => {
   await loginAsNewUser();
   await User.createWithCurrentUser();
   const invite = await GenericGroupInvitation.findById(_id);
-  console.log('activiate now');
   await invite.activate(secretKey);
-  console.log('activiated');
 
   // verify that new user was added.
   await group.fetch();
