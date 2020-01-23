@@ -42,7 +42,7 @@ export default class GenericGroupInvitation extends Model {
     return invitation;
   }
 
-  async activate(secretKey: String) {
+  async activate(secretKey: string) {
     const invitationDetailsDecrypted = decrypt(
       secretKey,
       this.attrs.invitationDetails

@@ -76,10 +76,11 @@ test('it creates and activates generic group invitation', async t => {
   const group = new UserGroup();
   await group.create();
 
-  const genericGroupInvitation = await GenericGroupInvitation.makeGenericInvitation(
-    group
-  );
-  const { secretKey, attrs, _id } = genericGroupInvitation;
+  const {
+    secretKey,
+    attrs,
+    _id,
+  } = await GenericGroupInvitation.makeGenericInvitation(group);
 
   // can decrypt with secretKey
   const decrypted = decrypt(secretKey, attrs.invitationDetails);
