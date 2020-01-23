@@ -9,6 +9,7 @@ import { makeECPrivateKey } from 'blockstack/lib/keys';
 import Model from '../src/model';
 // import UserGroup from '../src/models/user-group';
 import { configure } from '../src/config';
+import { loginAsNewUser } from './helpers';
 
 dotenv.load();
 
@@ -16,52 +17,70 @@ let mockSaveClient;
 let mockFindClient;
 
 jest.mock('../src/api', () => ({
-  sendNewGaiaUrl: encrypted => new Promise(async (resolve) => {
-    // console.log('sendNewGaiaUrl');
-    if (!mockSaveClient) {
-      // console.log('connecting - save');
-      const { MongoClient } = require('mongodb');
-      const url = 'mongodb://localhost:27017/radiks-test-server';
-      mockSaveClient = await MongoClient.connect(url, { useNewUrlParser: true });
-    }
-    const collection = mockSaveClient.db().collection('radiks-testing-models');
-    // console.log(encrypted);
-    await collection.insertOne(encrypted);
-    resolve();
-  }),
-  find: query => new Promise(async (resolve, reject) => {
-    if (!mockFindClient) {
-      const { MongoClient } = require('mongodb');
-      // console.log('connecting - find');
-      const url = 'mongodb://localhost:27017/radiks-test-server';
-      mockFindClient = await MongoClient.connect(url, { useNewUrlParser: true });
-    }
-    const collection = mockFindClient.db().collection('radiks-testing-models');
-    const results = await collection.find(query).toArray();
-    resolve({ results });
-  }),
-  destroyModel: model => new Promise(async (resolve) => {
-    if (!mockFindClient) {
-      const { MongoClient } = require('mongodb');
-      // console.log('connecting - find');
-      const url = 'mongodb://localhost:27017/radiks-test-server';
-      mockFindClient = await MongoClient.connect(url, {
-        useNewUrlParser: true,
-      });
-    }
-    const collection = mockFindClient
-      .db()
-      .collection('radiks-testing-models');
-    await collection.deleteOne({ _id: model._id });
-    return resolve(true);
-  }),
+  sendNewGaiaUrl: encrypted =>
+    new Promise(async resolve => {
+      // console.log('sendNewGaiaUrl');
+      if (!mockSaveClient) {
+        // console.log('connecting - save');
+        const { MongoClient } = require('mongodb');
+        const url = 'mongodb://localhost:27017/radiks-test-server';
+        mockSaveClient = await MongoClient.connect(url, {
+          useNewUrlParser: true,
+        });
+      }
+      const collection = mockSaveClient
+        .db()
+        .collection('radiks-testing-models');
+      try {
+        await collection.insertOne(encrypted);
+      } catch (e) {
+        await collection.removeOne({ _id: encrypted._id });
+        await collection.insertOne(encrypted);
+      }
+      resolve();
+    }),
+  find: query =>
+    new Promise(async (resolve, reject) => {
+      if (!mockFindClient) {
+        const { MongoClient } = require('mongodb');
+        // console.log('connecting - find');
+        const url = 'mongodb://localhost:27017/radiks-test-server';
+        mockFindClient = await MongoClient.connect(url, {
+          useNewUrlParser: true,
+        });
+      }
+      const collection = mockFindClient
+        .db()
+        .collection('radiks-testing-models');
+      const results = await collection.find(query).toArray();
+      resolve({ results });
+    }),
+  destroyModel: model =>
+    new Promise(async resolve => {
+      if (!mockFindClient) {
+        const { MongoClient } = require('mongodb');
+        // console.log('connecting - find');
+        const url = 'mongodb://localhost:27017/radiks-test-server';
+        mockFindClient = await MongoClient.connect(url, {
+          useNewUrlParser: true,
+        });
+      }
+      const collection = mockFindClient
+        .db()
+        .collection('radiks-testing-models');
+      await collection.deleteOne({ _id: model._id });
+      return resolve(true);
+    }),
 }));
 
-Model.prototype.saveFile = jest.fn(encrypted => new Promise(async (resolve) => {
-  process.nextTick(() => {
-    resolve(encrypted);
-  });
-}));
+Model.prototype.saveFile = jest.fn(
+  encrypted =>
+    new Promise(async resolve => {
+      process.nextTick(() => {
+        resolve(encrypted);
+      });
+    })
+);
 
 // UserGroup.prototype.makeGaiaConfig = () => new Promise(async (resolve) => {
 //   process.nextTick(() => {
@@ -90,19 +109,7 @@ beforeEach(async () => {
   } catch (error) {
     // collection doesn't exist
   }
-  const appPrivateKey = makeECPrivateKey();
-  const blockstackConfig = JSON.stringify({
-    version: '1.0.0',
-    userData: {
-      appPrivateKey,
-      username: faker.name.findName(),
-      profile: {
-        // TODO
-      },
-    },
-  });
-
-  global.localStorage.setItem('blockstack-session', blockstackConfig);
+  loginAsNewUser();
 });
 
 afterAll(async () => {

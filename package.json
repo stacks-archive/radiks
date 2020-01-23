@@ -37,7 +37,8 @@
     "jest": "^24.8.0",
     "mock-local-storage": "^1.1.7",
     "mongodb": "^3.1.8",
-    "typescript": "^3.3.3333"
+    "typescript": "^3.3.3333",
+    "@blockstack/prettier-config": "0.0.4"
   },
   "dependencies": {
     "aes256": "^1.0.4",
@@ -51,6 +52,7 @@
   "peerDependencies": {
     "blockstack": "^19.2.1"
   },
+  "prettier": "@blockstack/prettier-config",
   "scripts": {
     "build": "rm -rf lib && yarn compile && yarn typescript",
     "compile": "babel src -d lib --extensions '.ts,.js'",
