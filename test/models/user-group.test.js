@@ -4,9 +4,11 @@ import '../setup';
 import UserGroup from '../../src/models/user-group';
 import User from '../../src/models/user';
 import GroupInvitation from '../../src/models/group-invitation';
+import GenericGroupInvitation from '../../src/models/generic-group-invitation';
 import SigningKey from '../../src/models/signing-key';
 import { userGroupKeys } from '../../src/helpers';
 import { TestModel } from '../helpers';
+import { decrypt } from 'aes256';
 
 test('it creates and activates a membership with the creator', async (t) => {
   const user = await User.createWithCurrentUser();
@@ -50,5 +52,29 @@ test('it signs and encrypts with group signing key', async (t) => {
   await model.save();
 
   expect(model.attrs.signingKeyId).toEqual(group.attrs.signingKeyId);
+  t();
+}, 30000);
+
+test('it creates user-specific group invitation', async (t) => {
+  const user = await User.createWithCurrentUser();
+  const group = new UserGroup();
+  await group.create();
+
+  const groupInvitation = await group.makeGroupMembership(user.attrs.username);
+  t();
+}, 30000);
+
+test('it creates and activates generic group invitation', async (t) => {
+  await User.createWithCurrentUser();
+  const group = new UserGroup();
+  await group.create();
+
+  const genericGroupInvitation = await group.makeGroupMembership();
+  const { secretKey, attrs } = genericGroupInvitation;
+  const decrypted = decrypt(secretKey, attrs.invitationDetails);
+  const parsed = JSON.parse(decrypted);
+  expect(group._id).toEqual(parsed.userGroupId);
+
+  await genericGroupInvitation.activate(secretKey);
   t();
 }, 30000);

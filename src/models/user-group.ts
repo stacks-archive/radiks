@@ -3,6 +3,7 @@ import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import Model from '../model';
 import GroupMembership from './group-membership';
 import GroupInvitation from './group-invitation';
+import GenericGroupInvitation from './generic-group-invitation';
 import SigningKey from './signing-key';
 import {
   userGroupKeys, addUserGroupKey, loadUserData, requireUserSession,
@@ -62,27 +63,31 @@ export default class UserGroup extends Model {
     return this;
   }
 
-  async makeGroupMembership(username: string): Promise<GroupInvitation> {
-    let existingInviteId = null;
-    this.attrs.members.forEach((member: Member) => {
-      if (member.username === username) {
-        existingInviteId = member.inviteId;
+  async makeGroupMembership(username?: string): Promise<GroupInvitation> {
+    if (username) {
+      let existingInviteId = null;
+      this.attrs.members.forEach((member: Member) => {
+        if (member.username === username) {
+          existingInviteId = member.inviteId;
+        }
+      });
+      if (existingInviteId) {
+        const invitation = await GroupInvitation.findById(
+          existingInviteId,
+          { decrypt: false },
+        );
+        return invitation as GroupInvitation;
       }
-    });
-    if (existingInviteId) {
-      const invitation = await GroupInvitation.findById(
-        existingInviteId,
-        { decrypt: false },
-      );
-      return invitation as GroupInvitation;
+      const invitation = await GroupInvitation.makeInvitation(username, this);
+      this.attrs.members.push({
+        username,
+        inviteId: invitation._id,
+      });
+      await this.save();
+      return invitation;
+    } else {
+      return await GenericGroupInvitation.makeGenericInvitation(this);
     }
-    const invitation = await GroupInvitation.makeInvitation(username, this);
-    this.attrs.members.push({
-      username,
-      inviteId: invitation._id,
-    });
-    await this.save();
-    return invitation;
   }
 
   static myGroups() {
