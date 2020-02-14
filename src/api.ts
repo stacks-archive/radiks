@@ -1,7 +1,6 @@
 import { stringify } from 'qs';
 import { getConfig } from './config';
 import Model from './model';
-
 export const sendNewGaiaUrl = async (gaiaURL: string): Promise<boolean> => {
   const { apiServer } = getConfig();
   const url = `${apiServer}/radiks/models/crawl`;
@@ -22,8 +21,8 @@ export const sendNewGaiaUrl = async (gaiaURL: string): Promise<boolean> => {
 };
 
 export interface FindQuery {
-  limit?: number,
-  [x: string]: any,
+  limit?: number;
+  [x: string]: any;
 }
 
 export const find = async (query: FindQuery) => {
@@ -45,10 +44,10 @@ export const count = async (query: FindQuery) => {
 };
 
 interface CentralSaveData {
-  signature: string,
-  username: string,
-  key: string,
-  value: any,
+  signature: string;
+  username: string;
+  key: string;
+  value: any;
 }
 
 export const saveCentral = async (data: CentralSaveData) => {
@@ -66,7 +65,11 @@ export const saveCentral = async (data: CentralSaveData) => {
   return success;
 };
 
-export const fetchCentral = async (key: string, username: string, signature: string) => {
+export const fetchCentral = async (
+  key: string,
+  username: string,
+  signature: string
+) => {
   const { apiServer } = getConfig();
   const queryString = stringify({ username, signature });
   const url = `${apiServer}/radiks/central/${key}?${queryString}`;
