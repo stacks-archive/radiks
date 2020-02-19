@@ -30,6 +30,7 @@ export default class Model {
   public static defaults: any = {};
   public static className?: string;
   public static emitter?: EventEmitter;
+  public static validateUsername = false;
   schema: Schema;
   _id: string;
   attrs: Attrs;
@@ -127,6 +128,7 @@ export default class Model {
         const now = new Date().getTime();
         this.attrs.createdAt = this.attrs.createdAt || now;
         this.attrs.updatedAt = now;
+        await this.setUsername();
         await this.sign();
         const encrypted = await this.encrypted();
         const gaiaURL = await this.saveFile(encrypted);
@@ -161,6 +163,19 @@ export default class Model {
   blockstackPath() {
     const path = `${this.modelName()}/${this._id}`;
     return path;
+  }
+
+  setUsername() {
+    const { validateUsername } = this.constructor as typeof Model;
+    if (validateUsername) {
+      const userSession = requireUserSession();
+      const { username, gaiaHubConfig } = userSession.loadUserData();
+      this.attrs.username = username;
+      // eslint-disable-next-line @typescript-eslint/camelcase
+      const { url_prefix, address } = gaiaHubConfig;
+      // eslint-disable-next-line @typescript-eslint/camelcase
+      this.attrs.gaiaURL = `${url_prefix}${address}/${this.blockstackPath()}`;
+    }
   }
 
   async fetch({ decrypt = true } = {}): Promise<this | undefined> {

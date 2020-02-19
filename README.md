@@ -25,9 +25,11 @@ A client-side framework for building model-driven decentralized applications on 
     - [Saving a model](#saving-a-model)
     - [Deleting a model](#deleting-a-model)
   - [Querying models](#querying-models)
+  - [Counting models](#counting-models)
   - [Fetching models created by the current user](#fetching-models-created-by-the-current-user)
   - [Managing relational data](#managing-relational-data)
   - [Extending the user model](#extending-the-user-model)
+  - [Validating usernames](#validating-usernames)
 - [Collaboration](#collaboration)
   - [UserGroup Model](#usergroup-model)
   - [General Workflow](#general-workflow)
@@ -411,6 +413,21 @@ class MyAppUserModel extends User {
   };
 }
 ~~~
+
+### Validating usernames
+
+There are many situations where it is important to validate usernames that are associated with models in your app. For example, imagine a social network, where each post is tied to a specific Blockstack ID. You need to have some validation to ensure that the user who created that model is the same user who owns that Blockstack ID. Radiks can do this for you, as long as you add a special flag to your model, called `validateUsername`.
+
+~~~javascript
+class ModelWithUsername extends Model {
+  static validateUsername = true
+  static schema = { ... }
+}
+~~~
+
+If you include this special `validateUsername` flag, then Radiks will pass on the necessar information to Radiks-server. Radiks-server will then perform some validation to ensure that model was indeed created by the username that they claim to have.
+
+One important thing to note here is that this configuration requires you to use the `publish-data` scope when logging in with Blockstack.
 
 ## Collaboration
 

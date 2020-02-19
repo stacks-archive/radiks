@@ -96,6 +96,10 @@ beforeEach(async () => {
     userData: {
       appPrivateKey,
       username: faker.name.findName(),
+      gaiaHubConfig: {
+        url_prefix: 'https://gaia.blockstack.org/hub/', // eslint-disable-line @typescript-eslint/camelcase
+        address: '1Me2Zi84EioQJcwDg5Kjgy5YaXgqXjxJYS',
+      },
       profile: {
         // TODO
       },
