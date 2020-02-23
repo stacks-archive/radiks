@@ -2,7 +2,7 @@ import Model from '../model';
 import User from './user';
 import UserGroup from './user-group';
 import {
-  clearStorage, userGroupKeys, GROUP_MEMBERSHIPS_STORAGE_KEY, loadUserData,
+  clearStorage, userGroupKeys, GROUP_MEMBERSHIPS_STORAGE_KEY, loadUserData, currentUserId,
 } from '../helpers';
 import SigningKey from './signing-key';
 import { Attrs } from '../types/index';
@@ -49,7 +49,7 @@ export default class GroupMembership extends Model {
   static async cacheKeys() {
     const { userGroups, signingKeys } = await this.fetchUserGroups();
     const groupKeys = userGroupKeys();
-    const self = await User.findById(loadUserData().username);
+    const self = await User.findById(currentUserId());
     const key = await SigningKey.findById(self.attrs.personalSigningKeyId);
     groupKeys.personal = key.attrs;
     groupKeys.signingKeys = signingKeys;

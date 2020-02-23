@@ -4,7 +4,7 @@ import { signECDSA } from 'blockstack/lib/encryption';
 import Model from '../model';
 import SigningKey from './signing-key';
 import GroupMembership from './group-membership';
-import { addPersonalSigningKey, loadUserData } from '../helpers';
+import { addPersonalSigningKey, loadUserData, currentUserId } from '../helpers';
 import { Schema } from '../types/index';
 
 const decrypted = true;
@@ -42,7 +42,7 @@ export default class BlockstackUser extends Model {
     const publicKey = getPublicKeyFromPrivate(appPrivateKey);
     const Clazz = this;
     const user = new Clazz({
-      _id: username,
+      _id: currentUserId(),
       username,
       publicKey,
       profile,
