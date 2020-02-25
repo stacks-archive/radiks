@@ -28,7 +28,7 @@ export interface FindQuery {
 
 export const find = async (query: FindQuery) => {
   const { apiServer } = getConfig();
-  const queryString = stringify(query, { arrayFormat: 'brackets', encode: false });
+  const queryString = stringify(query, { encode: false });
   const url = `${apiServer}/radiks/models/find?${queryString}`;
   const response = await fetch(url);
   const data = await response.json();
@@ -37,7 +37,7 @@ export const find = async (query: FindQuery) => {
 
 export const count = async (query: FindQuery) => {
   const { apiServer } = getConfig();
-  const queryString = stringify(query, { arrayFormat: 'brackets', encode: false });
+  const queryString = stringify(query, { encode: false });
   const url = `${apiServer}/radiks/models/count?${queryString}`;
   const response = await fetch(url);
   const data = await response.json();
