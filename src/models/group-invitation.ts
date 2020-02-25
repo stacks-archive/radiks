@@ -6,8 +6,8 @@ import { userGroupKeys, loadUserData } from '../helpers';
 import { Schema, Attrs } from '../types/index';
 
 interface GroupInvitationAttrs extends Attrs {
-  userGroupId?: string | Record<string, any>,
-  signingKeyPrivateKey?: string | Record<string, any>,
+  userGroupId?: string | Record<string, any>;
+  signingKeyPrivateKey?: string | Record<string, any>;
 }
 
 export default class GroupInvitation extends Model {
@@ -17,12 +17,15 @@ export default class GroupInvitation extends Model {
   static schema: Schema = {
     userGroupId: String,
     signingKeyPrivateKey: String,
-    signingKeyId: String,
-  }
+    signingKeyId: {
+      type: String,
+      decrypted: true,
+    },
+  };
 
   static defaults = {
     updatable: false,
-  }
+  };
 
   static async makeInvitation(username: string, userGroup: UserGroup) {
     const user = new User({ _id: username });
