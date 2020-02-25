@@ -8,7 +8,7 @@ import SigningKey from '../../src/models/signing-key';
 import { userGroupKeys } from '../../src/helpers';
 import { TestModel } from '../helpers';
 
-test('it creates and activates a membership with the creator', async (t) => {
+test('it creates and activates a membership with the creator', async t => {
   const user = await User.createWithCurrentUser();
   const group = new UserGroup();
   await group.create();
@@ -24,10 +24,12 @@ test('it creates and activates a membership with the creator', async (t) => {
   expect(member.username).toEqual(user._id);
   const { inviteId } = member;
 
-  const invitation = await GroupInvitation.findById(inviteId, { decrypt: false });
+  const invitation = await GroupInvitation.findById(inviteId, {
+    decrypt: false,
+  });
   expect(invitation.attrs.userGroupId).not.toEqual(group._id);
   expect(invitation.attrs.signingKeyPrivateKey).not.toEqual(group.privateKey);
-  expect(invitation.attrs.signingKeyId).not.toEqual(signingKey._id);
+  expect(invitation.attrs.signingKeyId).toEqual(signingKey._id);
 
   await invitation.decrypt();
   expect(invitation.attrs.userGroupId).toEqual(group._id);
@@ -41,7 +43,7 @@ test('it creates and activates a membership with the creator', async (t) => {
   t();
 }, 25000);
 
-test('it signs and encrypts with group signing key', async (t) => {
+test('it signs and encrypts with group signing key', async t => {
   await User.createWithCurrentUser();
   const group = new UserGroup();
   await group.create();

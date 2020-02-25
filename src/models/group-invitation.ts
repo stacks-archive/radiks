@@ -42,9 +42,12 @@ export default class GroupInvitation extends Model {
   }
 
   async activate() {
-    const { userGroups } = userGroupKeys();
-    const groupId: string = this.attrs.userGroupId as string;
-    if (userGroups[groupId]) {
+    const { username } = loadUserData();
+    const existingMemberships = await GroupMembership.fetchList({
+      username,
+      signingKeyId: this.attrs.signingKeyId,
+    });
+    if (existingMemberships.length > 0) {
       return true;
     }
     const groupMembership = new GroupMembership({
