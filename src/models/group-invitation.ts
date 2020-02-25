@@ -1,9 +1,9 @@
-import Model from "../model";
-import User from "./user";
-import GroupMembership from "./group-membership";
-import UserGroup from "./user-group";
-import { userGroupKeys, loadUserData } from "../helpers";
-import { Schema, Attrs } from "../types/index";
+import Model from '../model';
+import User from './user';
+import GroupMembership from './group-membership';
+import UserGroup from './user-group';
+import { userGroupKeys, loadUserData } from '../helpers';
+import { Schema, Attrs } from '../types/index';
 
 interface GroupInvitationAttrs extends Attrs {
   userGroupId?: string | Record<string, any>;
@@ -11,7 +11,7 @@ interface GroupInvitationAttrs extends Attrs {
 }
 
 export default class GroupInvitation extends Model {
-  static className = "GroupInvitation";
+  static className = 'GroupInvitation';
   userPublicKey: string;
 
   static schema: Schema = {
@@ -19,12 +19,12 @@ export default class GroupInvitation extends Model {
     signingKeyPrivateKey: String,
     signingKeyId: {
       type: String,
-      decrypted: true
-    }
+      decrypted: true,
+    },
   };
 
   static defaults = {
-    updatable: false
+    updatable: false,
   };
 
   static async makeInvitation(username: string, userGroup: UserGroup) {
@@ -34,7 +34,7 @@ export default class GroupInvitation extends Model {
     const invitation = new this({
       userGroupId: userGroup._id,
       signingKeyPrivateKey: userGroup.privateKey,
-      signingKeyId: userGroup.attrs.signingKeyId
+      signingKeyId: userGroup.attrs.signingKeyId,
     });
     invitation.userPublicKey = publicKey;
     await invitation.save();
@@ -51,7 +51,7 @@ export default class GroupInvitation extends Model {
       userGroupId: this.attrs.userGroupId,
       username: loadUserData().username,
       signingKeyPrivateKey: this.attrs.signingKeyPrivateKey,
-      signingKeyId: this.attrs.signingKeyId
+      signingKeyId: this.attrs.signingKeyId,
     });
     await groupMembership.save();
     await GroupMembership.cacheKeys();

@@ -1,14 +1,14 @@
-import Model from "../model";
-import User from "./user";
-import UserGroup from "./user-group";
+import Model from '../model';
+import User from './user';
+import UserGroup from './user-group';
 import {
   clearStorage,
   userGroupKeys,
   GROUP_MEMBERSHIPS_STORAGE_KEY,
-  loadUserData
-} from "../helpers";
-import SigningKey from "./signing-key";
-import { Attrs } from "../types/index";
+  loadUserData,
+} from '../helpers';
+import SigningKey from './signing-key';
+import { Attrs } from '../types/index';
 
 interface UserGroupKeys {
   userGroups: {
@@ -20,28 +20,28 @@ interface UserGroupKeys {
 }
 
 export default class GroupMembership extends Model {
-  static className = "GroupMembership";
+  static className = 'GroupMembership';
   static schema = {
     userGroupId: String,
     username: {
       type: String,
-      decrypted: true
+      decrypted: true,
     },
     signingKeyPrivateKey: String,
     signingKeyId: {
       type: String,
-      decrypted: true
-    }
+      decrypted: true,
+    },
   };
 
   static async fetchUserGroups(): Promise<UserGroupKeys> {
     const { username } = loadUserData();
     console.log(`loading user groups for ${username}`);
     const memberships: GroupMembership[] = await GroupMembership.fetchList({
-      username
+      username,
     });
     console.log({ memberships });
-    const signingKeys: UserGroupKeys["signingKeys"] = {};
+    const signingKeys: UserGroupKeys['signingKeys'] = {};
     memberships.forEach(({ attrs }) => {
       signingKeys[attrs.signingKeyId] = attrs.signingKeyPrivateKey;
     });
@@ -49,7 +49,7 @@ export default class GroupMembership extends Model {
       membership.fetchUserGroupSigningKey()
     );
     const userGroupList = await Promise.all(fetchAll);
-    const userGroups: UserGroupKeys["userGroups"] = {};
+    const userGroups: UserGroupKeys['userGroups'] = {};
     userGroupList.forEach(userGroup => {
       if (userGroup._id) {
         userGroups[userGroup._id] = userGroup.signingKeyId;
@@ -93,14 +93,14 @@ export default class GroupMembership extends Model {
   getSigningKey() {
     const {
       signingKeyId,
-      signingKeyPrivateKey
+      signingKeyPrivateKey,
     }: {
       signingKeyId?: string;
       signingKeyPrivateKey?: string;
     } = this.attrs;
     return {
       _id: signingKeyId,
-      privateKey: signingKeyPrivateKey
+      privateKey: signingKeyPrivateKey,
     };
   }
 
@@ -109,13 +109,13 @@ export default class GroupMembership extends Model {
     const userGroup = (await UserGroup.findById<UserGroup>(_id)) as UserGroup;
     if (userGroup) {
       const {
-        signingKeyId
+        signingKeyId,
       }: {
         signingKeyId?: string;
       } = userGroup.attrs;
       return {
         _id,
-        signingKeyId
+        signingKeyId,
       };
     }
     return {};
