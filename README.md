@@ -552,6 +552,8 @@ yarn compile
 yarn compile-watch
 ~~~
 
+NOTE: If on Windows, remove `'` on the `.ts,.js` for the `compile` and `compile-watch` scripts in `package.json`
+
 To run tests:
 
 ~~~bash
