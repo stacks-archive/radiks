@@ -82,10 +82,12 @@ export default class UserGroup extends Model {
       return invitation as GroupInvitation;
     }
     const invitation = await GroupInvitation.makeInvitation(username, this);
-    this.attrs.members.push({
-      username,
-      inviteId: invitation._id,
-    });
+
+    this.attrs.members = [
+      ...this.attrs.members,
+      { username, inviteId: invitation._id },
+    ];
+
     await this.save();
     return invitation;
   }
