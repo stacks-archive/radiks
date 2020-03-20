@@ -1,5 +1,5 @@
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
-import { signECDSA } from 'blockstack/lib/encryption';
+import { signECDSA } from 'blockstack/lib/encryption/ec';
 
 import Model from '../model';
 import SigningKey from './signing-key';

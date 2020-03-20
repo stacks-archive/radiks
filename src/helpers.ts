@@ -1,4 +1,4 @@
-import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption';
+import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption/ec';
 import { getConfig } from './config';
 import Model from './model';
 import { SchemaAttribute } from './types';

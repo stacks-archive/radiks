@@ -1,6 +1,6 @@
 import uuid from 'uuid/v4';
 import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
-import { signECDSA } from 'blockstack/lib/encryption';
+import { signECDSA } from 'blockstack/lib/encryption/ec';
 import EventEmitter from 'wolfy87-eventemitter';
 
 import {

@@ -1,4 +1,4 @@
-import { signECDSA } from 'blockstack/lib/encryption';
+import { signECDSA } from 'blockstack/lib/encryption/ec';
 
 import { getConfig } from './config';
 import { saveCentral, fetchCentral } from './api';
