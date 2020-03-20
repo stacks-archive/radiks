@@ -1,5 +1,9 @@
 # Radiks-js Changelog
 
+## 0.2.2-beta.1 - November 18th, 2019
+
+Passes the `updatedAt` attribute to the "destroy" API in `radiks-server`. This is required to work with [`radiks-server` issue #30](https://github.com/blockstack/radiks-server/pull/30).
+
 ## 0.2.1 - June 9th, 2019
 
 Thanks to @pradel for contributing most of the work in this release!

@@ -125,6 +125,7 @@ export default class Model {
           await this.beforeSave();
         }
         const now = new Date().getTime();
+        this.attrs.updatedAt = now;
         this.attrs.createdAt = this.attrs.createdAt || now;
         this.attrs.updatedAt = now;
         await this.sign();
@@ -306,6 +307,8 @@ export default class Model {
   }
 
   async destroy(): Promise<boolean> {
+    const now = new Date().getTime();
+    this.attrs.updatedAt = now;
     await this.sign();
     await this.deleteFile();
     return destroyModel(this);

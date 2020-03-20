@@ -71,14 +71,16 @@ test('it signs ID with the signing key private key', async () => {
 });
 
 test('it can delete a model', async () => {
-  const user = await User.createWithCurrentUser();
+  await User.createWithCurrentUser();
   const model = fakeModel();
   let deleteFileWasCalled = false;
   model.deleteFile = () => {
     deleteFileWasCalled = true;
   };
   await model.save();
+  const { updatedAt } = model.attrs;
   await model.destroy();
+  expect(model.attrs.updatedAt).toBeGreaterThan(updatedAt);
   expect(deleteFileWasCalled).toBeTruthy();
   const fetched = await TestModel.fetchList({}, { decrypt: false });
   expect(fetched.find(m => m._id === model._id)).toBeFalsy();

@@ -80,12 +80,12 @@ export const fetchCentral = async (
 
 export const destroyModel = async (model: Model) => {
   const { apiServer } = getConfig();
-  const queryString = stringify({ signature: model.attrs.radiksSignature });
+  const { updatedAt } = model.attrs;
+  const queryString = stringify({ signature: model.attrs.radiksSignature, updatedAt });
   const url = `${apiServer}/radiks/models/${model._id}?${queryString}`;
   const response = await fetch(url, {
     method: 'DELETE',
   });
   const data = await response.json();
-  console.log(data);
   return data.success;
 };
