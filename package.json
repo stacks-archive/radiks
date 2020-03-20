@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "aes256": "^1.0.4",
-    "crypto-random-string": "
+    "crypto-random-string": "^3.2.0",
     "@types/node": "^13.7.0",
     "faker": "^4.1.0",
     "qs": "^6.5.2",

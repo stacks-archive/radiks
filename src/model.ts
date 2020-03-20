@@ -69,8 +69,7 @@ export default class Model {
       limit: 1,
     };
     const results: T[] = await this.fetchList(selector, options);
-    //fixed by adding a check to see if the results has any results other will get index out of range
-    return results && results.length ? results[0] : {};
+    return results && results.length ? results[0] : undefined;
   }
 
   static async findById<T extends Model>(
@@ -285,7 +284,6 @@ export default class Model {
           });
         } else {
           _this.emitter.emit(EVENT_NAME, model);
-          console.error('Model not owned by current user');
         }
       }
     } catch (error) {

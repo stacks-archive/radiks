@@ -773,11 +773,6 @@
   resolved "https://registry.yarnpkg.com/@blockstack/prettier-config/-/prettier-config-0.0.4.tgz#b051cd5eb66ff9ec61b0776f0eecc5a8437196d7"
   integrity sha512-fiDOBRLpm/Sv34qx9GsNer38qyTkp+rDRs74rrVd9Nn0JZVHoV97W98o81+6E9Bd+xvnY6JV+g1gA1P60RBCYA==
 
-"@blockstack/prettier-config@0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@blockstack/prettier-config/-/prettier-config-0.0.4.tgz#b051cd5eb66ff9ec61b0776f0eecc5a8437196d7"
-  integrity sha512-fiDOBRLpm/Sv34qx9GsNer38qyTkp+rDRs74rrVd9Nn0JZVHoV97W98o81+6E9Bd+xvnY6JV+g1gA1P60RBCYA==
-
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -2132,10 +2127,10 @@ cross-spawn@^6.0.0, cross-spawn@^6.0.5:
     shebang-command "^1.2.0"
     which "^1.2.9"
 
-crypto-random-string@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-3.1.0.tgz#0368382de82e914179ad2ca9c7a788e260184bae"
-  integrity sha512-Tip3yGB+bA7B0W8E4K4mNf2rZhu5r2G5Tb89/utEl5tP1QuLjTF/S9a1b8ifDrR4ORc9Utf6tscpSEtBY3YcPQ==
+crypto-random-string@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-3.2.0.tgz#d513ef0c2ac6ff7cad5769de585d9bf2ad5a2b4d"
+  integrity sha512-8vPu5bsKaq2uKRy3OL7h1Oo7RayAWB8sYexLKAqvCXVib8SxgbmoF1IN4QMKjBv8uI8mp5gPPMbiRah25GMrVQ==
   dependencies:
     type-fest "^0.8.1"
 
