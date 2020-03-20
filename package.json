@@ -15,6 +15,7 @@
     "@babel/plugin-transform-regenerator": "^7.0.0",
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-typescript": "^7.3.3",
+    "@blockstack/prettier-config": "0.0.4",
     "@types/jest": "^24.0.11",
     "@types/qs": "^6.5.1",
     "@types/uuid": "^3.4.4",
@@ -33,16 +34,17 @@
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jest": "^21.24.1",
     "express": "^4.16.4",
+    "fetch-mock": "^9.0.0-beta.2",
     "get-random-values": "^1.2.0",
     "jest": "^24.8.0",
     "mock-local-storage": "^1.1.7",
     "mongodb": "^3.1.8",
-    "typescript": "^3.3.3333",
-    "@blockstack/prettier-config": "0.0.4"
+    "typescript": "^3.3.3333"
   },
   "dependencies": {
     "aes256": "^1.0.4",
-    "crypto-random-string": "^3.1.0",
+    "crypto-random-string": "
+    "@types/node": "^13.7.0",
     "faker": "^4.1.0",
     "qs": "^6.5.2",
     "query-string": "^6.2.0",

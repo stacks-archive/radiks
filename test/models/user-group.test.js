@@ -31,7 +31,7 @@ test('it creates and activates a membership with the creator', async t => {
   });
   expect(invitation.attrs.userGroupId).not.toEqual(group._id);
   expect(invitation.attrs.signingKeyPrivateKey).not.toEqual(group.privateKey);
-  expect(invitation.attrs.signingKeyId).not.toEqual(signingKey._id);
+  expect(invitation.attrs.signingKeyId).toEqual(signingKey._id);
 
   await invitation.decrypt();
   expect(invitation.attrs.userGroupId).toEqual(group._id);
