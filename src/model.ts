@@ -4,48 +4,90 @@ import { signECDSA } from 'blockstack/lib/encryption/ec';
 import EventEmitter from 'wolfy87-eventemitter';
 
 import {
-  encryptObject, decryptObject, userGroupKeys, requireUserSession,
+  encryptObject,
+  decryptObject,
+  userGroupKeys,
+  requireUserSession,
 } from './helpers';
-import { sendNewGaiaUrl, find } from './api';
+import {
+  sendNewGaiaUrl, find, count, FindQuery, destroyModel,
+} from './api';
 import Streamer from './streamer';
+import { Schema, Attrs } from './types/index';
 
 const EVENT_NAME = 'MODEL_STREAM_EVENT';
 
-export default class Model {
-  static apiServer = null;
+interface FetchOptions {
+  decrypt?: boolean;
+}
 
-  static fromSchema(schema) {
+interface Event {
+  data: string;
+}
+
+export default class Model {
+  public static schema: Schema;
+  public static defaults: any = {};
+  public static className?: string;
+  public static emitter?: EventEmitter;
+  schema: Schema;
+  _id: string;
+  attrs: Attrs;
+
+  static fromSchema(schema: Schema) {
     this.schema = schema;
     return this;
   }
 
-  static defaults = {}
-
-  static async fetchList(_selector = {}, { decrypt = true } = {}) {
-    const selector = {
+  static async fetchList<T extends Model>(
+    _selector: FindQuery = {},
+    { decrypt = true }: FetchOptions = {},
+  ) {
+    const selector: FindQuery = {
       ..._selector,
       radiksType: this.modelName(),
     };
     const { results } = await find(selector);
     const Clazz = this;
-    const modelDecryptions = results.map((doc) => {
+    const modelDecryptions: Promise<T>[] = results.map((doc: any) => {
       const model = new Clazz(doc);
       if (decrypt) {
         return model.decrypt();
       }
-      return model;
+      return Promise.resolve(model);
     });
-    const models = await Promise.all(modelDecryptions);
+    const models: T[] = await Promise.all(modelDecryptions);
     return models;
   }
 
-  static async findOne(selector = {}, options = { decrypt: true }) {
-    const opts = {
-      ...options,
+  static async findOne<T extends Model>(
+    _selector: FindQuery = {},
+    options: FetchOptions = { decrypt: true },
+  ) {
+    const selector: FindQuery = {
+      ..._selector,
       limit: 1,
     };
-    const results = await this.fetchList(selector, opts);
-    return results[0];
+    const results: T[] = await this.fetchList(selector, options);
+    return results && results.length ? results[0] : undefined;
+  }
+
+  static async findById<T extends Model>(
+    _id: string,
+    fetchOptions?: Record<string, any>,
+  ) {
+    const Clazz = this;
+    const model: Model = new Clazz({ _id });
+    return model.fetch(fetchOptions);
+  }
+
+  static async count(_selector: FindQuery = {}): Promise<number> {
+    const selector: FindQuery = {
+      ..._selector,
+      radiksType: this.modelName(),
+    };
+    const data = await count(selector);
+    return data.total;
   }
 
   /**
@@ -55,7 +97,7 @@ export default class Model {
    *
    * @param {Object} _selector - A query to include when fetching models
    */
-  static fetchOwnList(_selector = {}) {
+  static fetchOwnList(_selector: FindQuery = {}) {
     const { _id } = userGroupKeys().personal;
     const selector = {
       ..._selector,
@@ -64,14 +106,8 @@ export default class Model {
     return this.fetchList(selector);
   }
 
-  static findById(_id, fetchOptions) {
-    const Clazz = this;
-    const model = new Clazz({ _id });
-    return model.fetch(fetchOptions);
-  }
-
-  constructor(attrs = {}) {
-    const { schema, defaults } = this.constructor;
+  constructor(attrs: Attrs = {}) {
+    const { schema, defaults } = this.constructor as typeof Model;
     const name = this.modelName();
     this.schema = schema;
     this._id = attrs._id || uuid().replace('-', '');
@@ -89,6 +125,7 @@ export default class Model {
           await this.beforeSave();
         }
         const now = new Date().getTime();
+        this.attrs.updatedAt = now;
         this.attrs.createdAt = this.attrs.createdAt || now;
         this.attrs.updatedAt = now;
         await this.sign();
@@ -97,7 +134,7 @@ export default class Model {
         await sendNewGaiaUrl(gaiaURL);
         resolve(this);
       } catch (error) {
-        reject(error);
+        reject('Could not save Record to user gaia storage, '+ error);
       }
     });
   }
@@ -106,11 +143,20 @@ export default class Model {
     return encryptObject(this);
   }
 
-  saveFile(encrypted) {
+  saveFile(encrypted: Record<string, any>) {
     const userSession = requireUserSession();
-    return userSession.putFile(this.blockstackPath(), JSON.stringify(encrypted), {
-      encrypt: false,
-    });
+    return userSession.putFile(
+      this.blockstackPath(),
+      JSON.stringify(encrypted),
+      {
+        encrypt: false,
+      },
+    );
+  }
+
+  deleteFile() {
+    const userSession = requireUserSession();
+    return userSession.deleteFile(this.blockstackPath());
   }
 
   blockstackPath() {
@@ -118,12 +164,17 @@ export default class Model {
     return path;
   }
 
-  async fetch({ decrypt = true } = {}) {
+  async fetch({ decrypt = true } = {}): Promise<this | undefined> {
     const query = {
       _id: this._id,
     };
     const { results } = await find(query);
     const [attrs] = results;
+    // Object not found on the server so we return undefined
+    if (!attrs) {
+      console.error('Object not found on the server')
+      return undefined;
+    }
     this.attrs = {
       ...this.attrs,
       ...attrs,
@@ -131,7 +182,7 @@ export default class Model {
     if (decrypt) {
       await this.decrypt();
     }
-    if (this.afterFetch) await this.afterFetch();
+    await this.afterFetch();
     return this;
   }
 
@@ -140,7 +191,7 @@ export default class Model {
     return this;
   }
 
-  update(attrs) {
+  update(attrs: Attrs) {
     this.attrs = {
       ...this.attrs,
       ...attrs,
@@ -154,7 +205,7 @@ export default class Model {
     const signingKey = this.getSigningKey();
     this.attrs.signingKeyId = this.attrs.signingKeyId || signingKey._id;
     const { privateKey } = signingKey;
-    const contentToSign = [this._id];
+    const contentToSign: (string | number)[] = [this._id];
     if (this.attrs.updatedAt) {
       contentToSign.push(this.attrs.updatedAt);
     }
@@ -174,15 +225,16 @@ export default class Model {
         privateKey,
       };
     }
+    console.log('No userGroupId available')
     return userGroupKeys().personal;
   }
 
-  encryptionPublicKey() {
+  async encryptionPublicKey() {
     return getPublicKeyFromPrivate(this.encryptionPrivateKey());
   }
 
   encryptionPrivateKey() {
-    let privateKey;
+    let privateKey: string;
     if (this.attrs.userGroupId) {
       const { userGroups, signingKeys } = userGroupKeys();
       privateKey = signingKeys[userGroups[this.attrs.userGroupId]];
@@ -192,27 +244,31 @@ export default class Model {
     return privateKey;
   }
 
-  static modelName() {
+  static modelName(): string {
     return this.className || this.name;
   }
 
-  modelName() {
-    return this.constructor.modelName();
+  modelName(): string {
+    const { modelName } = this.constructor as typeof Model;
+    return modelName.apply(this.constructor);
   }
 
   isOwnedByUser() {
     const keys = userGroupKeys();
     if (this.attrs.signingKeyId === keys.personal._id) {
       return true;
-    } if (this.attrs.userGroupId) {
+    }
+    if (this.attrs.userGroupId) {
       let isOwned = false;
       Object.keys(keys.userGroups).forEach((groupId) => {
         if (groupId === this.attrs.userGroupId) {
           isOwned = true;
         }
       });
+      if(!isOwned) console.error('Object not owned by user');
       return isOwned;
     }
+    console.error('Object not owned by user')
     return false;
   }
 
@@ -231,26 +287,40 @@ export default class Model {
         }
       }
     } catch (error) {
-      // console.error(error.message);
+      console.error( 'Cannot parse model data : ', error.message );
     }
-  }
+  };
 
-  static addStreamListener(callback) {
+  static addStreamListener(callback: () => void) {
     if (!this.emitter) {
       this.emitter = new EventEmitter();
     }
     if (this.emitter.getListeners().length === 0) {
-      Streamer.addListener((args) => {
+      Streamer.addListener((args: any) => {
         this.onStreamEvent(this, args);
       });
     }
     this.emitter.addListener(EVENT_NAME, callback);
   }
 
-  static removeStreamListener(callback) {
+  static removeStreamListener(callback: () => void) {
     this.emitter.removeListener(EVENT_NAME, callback);
     if (this.emitter.getListeners().length === 0) {
       Streamer.removeListener(this.onStreamEvent);
     }
   }
+
+  async destroy(): Promise<boolean> {
+    const now = new Date().getTime();
+    this.attrs.updatedAt = now;
+    await this.sign();
+    await this.deleteFile();
+    return destroyModel(this);
+  }
+
+  // @abstract
+  beforeSave() {}
+
+  // @abstract
+  afterFetch() {}
 }

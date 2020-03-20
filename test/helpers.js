@@ -1,5 +1,9 @@
-
 import Model from '../src/model';
+import { makeECPrivateKey } from 'blockstack';
+import faker from 'faker';
+import { GROUP_MEMBERSHIPS_STORAGE_KEY, clearStorage } from '../src/helpers';
+import { GroupMembership, User } from '../src';
+
 // import './setup';
 
 export class TestModel extends Model {
@@ -12,7 +16,7 @@ export class TestModel extends Model {
     tags: Array,
     number: Number,
     description: String,
-  }
+  };
 }
 
 export const fakeModel = () => {
@@ -29,4 +33,26 @@ export const fakeModel = () => {
     description,
   });
   return model;
+};
+
+export const loginAsNewUser = async () => {
+  const appPrivateKey = makeECPrivateKey();
+  const userData = {
+    appPrivateKey,
+    username: faker.name.findName(),
+    profile: {
+      // TODO
+    },
+  };
+  await loginAs(userData);
+};
+
+export const loginAs = async userData => {
+  const blockstackConfig = JSON.stringify({
+    version: '1.0.0',
+    userData,
+  });
+
+  global.localStorage.setItem('blockstack-session', blockstackConfig);
+  clearStorage();
 };

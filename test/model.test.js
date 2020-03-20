@@ -69,3 +69,26 @@ test('it signs ID with the signing key private key', async () => {
   await model.sign();
   expect(verifyECDSA(message, key.attrs.publicKey, model.attrs.radiksSignature)).toEqual(true);
 });
+
+test('it can delete a model', async () => {
+  await User.createWithCurrentUser();
+  const model = fakeModel();
+  let deleteFileWasCalled = false;
+  model.deleteFile = () => {
+    deleteFileWasCalled = true;
+  };
+  await model.save();
+  const { updatedAt } = model.attrs;
+  await model.destroy();
+  expect(model.attrs.updatedAt).toBeGreaterThan(updatedAt);
+  expect(deleteFileWasCalled).toBeTruthy();
+  const fetched = await TestModel.fetchList({}, { decrypt: false });
+  expect(fetched.find(m => m._id === model._id)).toBeFalsy();
+});
+
+test('it return null if model not found', async () => {
+  const modelFindById = await TestModel.findById('notfound');
+  expect(modelFindById).toBe(undefined);
+  const modelFindOne = await TestModel.findOne({ _id: 'notfound' });
+  expect(modelFindOne).toBe(undefined);
+});

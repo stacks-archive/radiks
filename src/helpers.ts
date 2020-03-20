@@ -1,9 +1,11 @@
 import { encryptECIES, decryptECIES } from 'blockstack/lib/encryption/ec';
 import { getConfig } from './config';
+import Model from './model';
+import { SchemaAttribute } from './types';
 
 export const GROUP_MEMBERSHIPS_STORAGE_KEY = 'GROUP_MEMBERSHIPS_STORAGE_KEY';
 
-const valueToString = (value, clazz) => {
+const valueToString = (value: any, clazz: any) => {
   if (clazz === Boolean) {
     return value ? 'true' : 'false';
   } if (clazz === Number) {
@@ -14,7 +16,7 @@ const valueToString = (value, clazz) => {
   return value;
 };
 
-const stringToValue = (value, clazz) => {
+const stringToValue = (value: string, clazz: any) => {
   if (clazz === Boolean) {
     return value === 'true';
   } if (clazz === Number) {
@@ -25,17 +27,24 @@ const stringToValue = (value, clazz) => {
   return value;
 };
 
-export const decryptObject = async (encrypted, model) => {
+export const decryptObject = async (encrypted: any, model: Model) => {
   const privateKey = await model.encryptionPrivateKey();
-  const decrypted = Object.assign({}, encrypted);
+  const decrypted = {
+    ...encrypted,
+  };
   const { schema } = model;
   Object.keys(encrypted).forEach((key) => {
     const value = encrypted[key];
-    const clazz = schema[key];
-    if (clazz && !clazz.decrypted) {
+    const schemaValue = schema[key];
+    let clazz = schemaValue;
+    const schemaAttribute = schema[key] as SchemaAttribute;
+    if (schemaAttribute && schemaAttribute.type) {
+      clazz = schemaAttribute.type;
+    }
+    if (clazz && schemaAttribute && !schemaAttribute.decrypted) {
       try {
-        const decryptedValue = decryptECIES(privateKey, value);
-        decrypted[key] = stringToValue(decryptedValue, clazz.type || clazz);
+        const decryptedValue = decryptECIES(privateKey, value) as string;
+        decrypted[key] = stringToValue(decryptedValue, clazz);
       } catch (error) {
         console.debug(`Decryption error for key: '${key}': ${error.message}`); // eslint-disable-line
         decrypted[key] = value;
@@ -45,19 +54,28 @@ export const decryptObject = async (encrypted, model) => {
   return decrypted;
 };
 
-export const encryptObject = async (model) => {
+export const encryptObject = async (model: Model) => {
   const publicKey = await model.encryptionPublicKey();
   const object = model.attrs;
-  // console.log(object);
-  const encrypted = Object.assign({}, object, { _id: model._id });
+  const encrypted = {
+    ...object,
+    _id: model._id,
+  };
   Object.keys(model.schema).forEach((key) => {
-    const clazz = model.schema[key];
-    const { decrypted } = clazz;
+    const schemaValue = model.schema[key];
+    const schemaAttribute = model.schema[key] as SchemaAttribute;
     const value = object[key];
-    if (typeof (value) !== 'undefined') {
-      const stringValue = valueToString(value, clazz.type || clazz);
-      encrypted[key] = decrypted ? value : encryptECIES(publicKey, stringValue);
+    let clazz = schemaValue;
+    if (typeof value === 'undefined') return;
+    if (schemaAttribute.type) {
+      clazz = schemaAttribute.type;
     }
+    if (schemaAttribute.decrypted) {
+      encrypted[key] = value;
+      return;
+    }
+    const stringValue = valueToString(value, clazz);
+    encrypted[key] = encryptECIES(publicKey, stringValue);
   });
   return encrypted;
 };
@@ -67,8 +85,8 @@ export const clearStorage = () => {
 };
 
 export const userGroupKeys = () => {
-  let keys = localStorage.getItem(GROUP_MEMBERSHIPS_STORAGE_KEY);
-  keys = keys ? JSON.parse(keys) : {};
+  const keysString = localStorage.getItem(GROUP_MEMBERSHIPS_STORAGE_KEY);
+  let keys = keysString ? JSON.parse(keysString) : {};
   keys = {
     userGroups: {},
     signingKeys: {},

@@ -3,28 +3,50 @@ import { getPublicKeyFromPrivate } from 'blockstack/lib/keys';
 import Model from '../model';
 import GroupMembership from './group-membership';
 import GroupInvitation from './group-invitation';
+import GenericGroupInvitation from './generic-group-invitation';
 import SigningKey from './signing-key';
 import {
-  userGroupKeys, addUserGroupKey, loadUserData, requireUserSession,
+  userGroupKeys,
+  addUserGroupKey,
+  loadUserData,
+  requireUserSession,
 } from '../helpers';
+import { Schema, Attrs } from '../types/index';
+
+interface Member {
+  username: string;
+  inviteId: string;
+}
+
+interface UserGroupAttrs extends Attrs {
+  name?: string | any;
+  gaiaConfig: Record<string, any> | any;
+  members: any[] | any;
+}
+
+const defaultMembers: Member[] = [];
 
 export default class UserGroup extends Model {
-  static schema = {
+  privateKey?: string;
+
+  static schema: Schema = {
     name: String,
     gaiaConfig: Object,
     members: {
       type: Array,
     },
-  }
+  };
 
   static defaults = {
-    members: [],
-  }
+    members: defaultMembers,
+  };
 
-  static async find(id) {
+  static async find(id: string) {
     const { userGroups, signingKeys } = GroupMembership.userGroupKeys();
     if (!userGroups || !userGroups[id]) {
-      throw new Error(`UserGroup not found with id: '${id}'. Have you called \`GroupMembership.cacheKeys()\`?`);
+      throw new Error(
+        `UserGroup not found with id: '${id}'. Have you called \`GroupMembership.cacheKeys()\`?`
+      );
     }
     const signingKey = userGroups[id];
     const privateKey = signingKeys[signingKey];
@@ -46,22 +68,26 @@ export default class UserGroup extends Model {
     return this;
   }
 
-  async makeGroupMembership(username) {
+  async makeGroupMembership(username: string): Promise<GroupInvitation> {
     let existingInviteId = null;
-    this.attrs.members.forEach((member) => {
+    this.attrs.members.forEach((member: Member) => {
       if (member.username === username) {
         existingInviteId = member.inviteId;
       }
     });
     if (existingInviteId) {
-      const invitation = await GroupInvitation.findById(existingInviteId, { decrypt: false });
-      return invitation;
+      const invitation = await GroupInvitation.findById(existingInviteId, {
+        decrypt: false,
+      });
+      return invitation as GroupInvitation;
     }
     const invitation = await GroupInvitation.makeInvitation(username, this);
-    this.attrs.members.push({
-      username,
-      inviteId: invitation._id,
-    });
+
+    this.attrs.members = [
+      ...this.attrs.members,
+      { username, inviteId: invitation._id },
+    ];
+
     await this.save();
     return invitation;
   }
@@ -69,14 +95,17 @@ export default class UserGroup extends Model {
   static myGroups() {
     const { userGroups } = userGroupKeys();
     const keys = Object.keys(userGroups);
-    return this.fetchList({ _id: keys.join(',') });
+    if (keys.length > 0) {
+      return this.fetchList({ _id: keys.join(',') });
+    } 
+    return [];
   }
 
   publicKey() {
     return getPublicKeyFromPrivate(this.privateKey);
   }
 
-  encryptionPublicKey() {
+  async encryptionPublicKey() {
     return this.publicKey();
   }
 
@@ -88,22 +117,22 @@ export default class UserGroup extends Model {
     return signingKeys[this.attrs.signingKeyId];
   }
 
-  async makeGaiaConfig() {
-    const userData = loadUserData();
-    const { appPrivateKey, hubUrl } = userData;
-    const scopes = [
-      {
-        scope: 'putFilePrefix',
-        domain: `UserGroups/${this._id}/`,
-      },
-    ];
-    const userSession = requireUserSession();
-    const gaiaConfig = await userSession.connectToGaiaHub(hubUrl, appPrivateKey, scopes);
-    this.attrs.gaiaConfig = gaiaConfig;
-    return gaiaConfig;
-  }
+  // async makeGaiaConfig() {
+  //   const userData = loadUserData();
+  //   const { appPrivateKey, hubUrl } = userData;
+  //   const scopes = [
+  //     {
+  //       scope: 'putFilePrefix',
+  //       domain: `UserGroups/${this._id}/`,
+  //     },
+  //   ];
+  //   const userSession = requireUserSession();
+  //   const gaiaConfig = await userSession.connectToGaiaHub(hubUrl, appPrivateKey, scopes);
+  //   this.attrs.gaiaConfig = gaiaConfig;
+  //   return gaiaConfig;
+  // }
 
-  static modelName = () => 'UserGroup'
+  static modelName = () => 'UserGroup';
 
   getSigningKey() {
     const { userGroups, signingKeys } = userGroupKeys();
