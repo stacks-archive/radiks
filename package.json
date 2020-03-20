@@ -42,6 +42,8 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
+    "aes256": "^1.0.4",
+    "crypto-random-string": "
     "@types/node": "^13.7.0",
     "faker": "^4.1.0",
     "qs": "^6.5.2",

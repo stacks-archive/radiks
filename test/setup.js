@@ -9,6 +9,7 @@ import { makeECPrivateKey } from 'blockstack/lib/keys';
 import Model from '../src/model';
 // import UserGroup from '../src/models/user-group';
 import { configure } from '../src/config';
+import { loginAsNewUser } from './helpers';
 
 dotenv.load();
 
@@ -30,8 +31,12 @@ jest.mock('../src/api', () => ({
       const collection = mockSaveClient
         .db()
         .collection('radiks-testing-models');
-      // console.log(encrypted);
-      await collection.insertOne(encrypted);
+      try {
+        await collection.insertOne(encrypted);
+      } catch (e) {
+        await collection.removeOne({ _id: encrypted._id });
+        await collection.insertOne(encrypted);
+      }
       resolve();
     }),
   find: query =>
@@ -104,19 +109,7 @@ beforeEach(async () => {
   } catch (error) {
     // collection doesn't exist
   }
-  const appPrivateKey = makeECPrivateKey();
-  const blockstackConfig = JSON.stringify({
-    version: '1.0.0',
-    userData: {
-      appPrivateKey,
-      username: faker.name.findName(),
-      profile: {
-        // TODO
-      },
-    },
-  });
-
-  global.localStorage.setItem('blockstack-session', blockstackConfig);
+  loginAsNewUser();
 });
 
 afterAll(async () => {

@@ -773,6 +773,11 @@
   resolved "https://registry.yarnpkg.com/@blockstack/prettier-config/-/prettier-config-0.0.4.tgz#b051cd5eb66ff9ec61b0776f0eecc5a8437196d7"
   integrity sha512-fiDOBRLpm/Sv34qx9GsNer38qyTkp+rDRs74rrVd9Nn0JZVHoV97W98o81+6E9Bd+xvnY6JV+g1gA1P60RBCYA==
 
+"@blockstack/prettier-config@0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@blockstack/prettier-config/-/prettier-config-0.0.4.tgz#b051cd5eb66ff9ec61b0776f0eecc5a8437196d7"
+  integrity sha512-fiDOBRLpm/Sv34qx9GsNer38qyTkp+rDRs74rrVd9Nn0JZVHoV97W98o81+6E9Bd+xvnY6JV+g1gA1P60RBCYA==
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -1114,6 +1119,11 @@ acorn@^6.0.1, acorn@^6.0.7:
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-6.4.0.tgz#b659d2ffbafa24baf5db1cdbb2c94a983ecd2784"
   integrity sha512-gac8OEcQ2Li1dxIEWGZzsp2BitJxwkwcOm0zHAJLcPJaVvm58FRnk6RkuLRpU1EujipU2ZFODv2P9DLMfnV8mw==
+
+aes256@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/aes256/-/aes256-1.0.4.tgz#7cd4666535216cae28eecece0d46fdb4c469c557"
+  integrity sha512-yuaKOdoKebChkP+uRsQovWsJYm6qf58cQTvXBu6MM0BMnrXZ9SXEiXREBuU513ZRr+Uo2qX/Ci6EODLUu/qiHA==
 
 ajv@^4.11.5:
   version "4.11.8"
@@ -2121,6 +2131,13 @@ cross-spawn@^6.0.0, cross-spawn@^6.0.5:
     semver "^5.5.0"
     shebang-command "^1.2.0"
     which "^1.2.9"
+
+crypto-random-string@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-3.1.0.tgz#0368382de82e914179ad2ca9c7a788e260184bae"
+  integrity sha512-Tip3yGB+bA7B0W8E4K4mNf2rZhu5r2G5Tb89/utEl5tP1QuLjTF/S9a1b8ifDrR4ORc9Utf6tscpSEtBY3YcPQ==
+  dependencies:
+    type-fest "^0.8.1"
 
 css-select@~1.2.0:
   version "1.2.0"
@@ -6210,6 +6227,11 @@ type-check@~0.3.2:
   integrity sha1-WITKtRLPHTVeP7eE8wgEsrUg23I=
   dependencies:
     prelude-ls "~1.1.2"
+
+type-fest@^0.8.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
+  integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
 type-is@~1.6.17, type-is@~1.6.18:
   version "1.6.18"

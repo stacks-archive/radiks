@@ -4,6 +4,7 @@ import User from './models/user';
 import { configure, getConfig } from './config';
 import GroupMembership from './models/group-membership';
 import GroupInvitation from './models/group-invitation';
+import GenericGroupInvitation from './models/generic-group-invitation';
 import Central from './central';
 
 export {

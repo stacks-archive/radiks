@@ -70,6 +70,30 @@ export default class GroupMembership extends Model {
     );
   }
 
+  static async cacheGroupKey(groupMembership: GroupMembership) {
+    const {
+      userGroupId,
+      signingKeyId,
+      signingKeyPrivateKey,
+    } = groupMembership.attrs;
+    const groupKeys = JSON.parse(
+      localStorage.getItem(GROUP_MEMBERSHIPS_STORAGE_KEY)
+    ) as UserGroupKeys;
+    const keys = groupKeys.signingKeys;
+    const groups = groupKeys.userGroups;
+
+    groups[userGroupId] = signingKeyId;
+    keys[signingKeyId] = signingKeyPrivateKey;
+
+    groupKeys.signingKeys = keys;
+    groupKeys.userGroups = groups;
+
+    localStorage.setItem(
+      GROUP_MEMBERSHIPS_STORAGE_KEY,
+      JSON.stringify(groupKeys)
+    );
+  }
+
   static async clearStorage() {
     clearStorage();
   }
