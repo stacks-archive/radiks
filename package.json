@@ -1,6 +1,6 @@
 {
   "name": "radiks",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Manage models with encryption and decentralized storage",
   "main": "lib/index.js",
   "author": "Hank Stoever",
@@ -41,6 +41,8 @@
   },
   "dependencies": {
     "faker": "^4.1.0",
+    "ipfs": "^0.39.0",
+    "orbit-db": "^0.22.0",
     "qs": "^6.5.2",
     "query-string": "^6.2.0",
     "uuid": "^3.3.2",

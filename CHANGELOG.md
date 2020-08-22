@@ -1,5 +1,10 @@
 # Radiks-js Changelog
 
+## 0.3.0 - November 9th, 2019
+
+- Add support for using your own our one of the provided indexers.
+- Add OrbitDB support, so you don't need to use `radiks-server` and have an alternative that is decentralized.
+
 ## 0.2.1 - June 9th, 2019
 
 Thanks to @pradel for contributing most of the work in this release!
